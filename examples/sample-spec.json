@@ -1,0 +1,25 @@
+{
+  "title": "Example: URL shortener",
+  "nodes": [
+    {"id":"client","label":"Browser / Mobile","kind":"client","layer":0},
+    {"id":"cdn","label":"CDN","kind":"cdn","layer":1},
+    {"id":"lb","label":"Load Balancer","kind":"lb","layer":1},
+    {"id":"api","label":"API Service\n(stateless)","kind":"service","layer":2},
+    {"id":"cache","label":"Redis\n(hot short→long)","kind":"cache","layer":3},
+    {"id":"db","label":"Postgres\n(urls)","kind":"db","layer":3,"note":"key: short_code"},
+    {"id":"kafka","label":"Kafka\n(click events)","kind":"queue","layer":3},
+    {"id":"analytics","label":"Analytics\nWorker","kind":"service","layer":4}
+  ],
+  "edges": [
+    {"from":"client","to":"cdn","label":"GET /abc"},
+    {"from":"client","to":"lb","label":"POST /shorten"},
+    {"from":"cdn","to":"lb","label":"miss"},
+    {"from":"lb","to":"api"},
+    {"from":"api","to":"cache","label":"lookup"},
+    {"from":"api","to":"db","label":"read/write"},
+    {"from":"api","to":"kafka","label":"async","style":"dashed"},
+    {"from":"kafka","to":"analytics"}
+  ],
+  "groups":[{"label":"Core","nodes":["api","cache","db"]}],
+  "notes":["~100:1 read/write","p99 redirect < 50ms"]
+}
