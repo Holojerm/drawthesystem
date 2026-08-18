@@ -1,6 +1,7 @@
 ---
 name: scenario
 description: Create a company-flavoured system design scenario + session folder (prompt, hidden interviewer notes, blank Excalidraw canvas). Usage — /scenario <company-slug|generic> [seed # | topic] [--depth|--breadth] [--minutes 45]
+license: MIT
 ---
 
 # /scenario

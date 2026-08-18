@@ -1,6 +1,7 @@
 ---
 name: solution
 description: Generate a reference architecture for a session as a real .excalidraw diagram plus a written walkthrough and a diff against your attempt. Usage — /solution [session-dir]
+license: MIT
 ---
 
 # /solution [session-dir]

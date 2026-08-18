@@ -1,6 +1,7 @@
 ---
 name: critique
 description: Async review of your Excalidraw diagram (+ notes) for a session against the scenario and rubric; writes feedback.md. Usage — /critique [session-dir] [path/to/other.excalidraw]
+license: MIT
 ---
 
 # /critique [session-dir] [diagram-path]

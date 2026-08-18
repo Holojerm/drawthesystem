@@ -1,6 +1,7 @@
 ---
 name: progress
 description: Summarise practice history from progress.md and session feedback — trends per rubric dimension, recurring gaps, and what to drill next. Usage — /progress
+license: MIT
 ---
 
 # /progress
