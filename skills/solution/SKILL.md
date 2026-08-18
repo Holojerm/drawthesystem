@@ -33,4 +33,4 @@ Produce the "model answer" after the user has attempted the scenario. **Refuse (
 ## Diff vs. your attempt — 3–6 bullets from feedback.md: what you had, what's different, why it matters
 ## Talk track — 60-second summary you could say out loud
 ```
-6. Print: the open-in-Excalidraw command (`node scripts/to-clipboard.mjs <session>/solution.excalidraw` → Cmd+V) and the *Diff vs. your attempt* section. Suggest they redraw from memory tomorrow and `/critique` again.
+6. Print: how to view it — workbench `http://localhost:7788/sessions/<dir>` → *Solution* toggle (read-only, side by side with their canvas via the toggle), or `node scripts/to-clipboard.mjs <session>/solution.excalidraw` → Cmd+V on excalidraw.com — and the *Diff vs. your attempt* section. Suggest they redraw from memory tomorrow and `/critique` again.

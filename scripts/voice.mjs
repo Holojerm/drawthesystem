@@ -12,8 +12,12 @@
  * no keys, works in Chrome and Safari. Premium engines can be swapped in by
  * editing the two functions marked PLUGGABLE in the HTML below.
  *
- * Env: VOICE_PORT (default 7788), VOICE_LANG (default en-US), VOICE_TTS=say to
- * use macOS `say` for TTS instead of the browser (handy if the tab is muted).
+ * If the Nuxt workbench (web/) is running it hosts the same bridge under
+ * /api/voice/*, and `speak`/`listen`/`status`/`log` talk to it automatically —
+ * `serve` is only the no-dependencies fallback page.
+ *
+ * Env: VOICE_URL (default http://localhost:7788), VOICE_PORT, VOICE_LANG
+ * (default en-US), VOICE_TTS=say to use macOS `say` instead of browser TTS.
  */
 import http from "node:http";
 import { spawn } from "node:child_process";
@@ -27,7 +31,17 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const [, , cmd, ...rest] = process.argv;
 
 function argOf(flag) { const i = process.argv.indexOf(flag); return i > -1 ? process.argv[i + 1] : undefined; }
-const base = `http://localhost:${PORT}`;
+const base = process.env.VOICE_URL ?? `http://localhost:${PORT}`;
+// The web workbench (web/) serves the same endpoints under /api/voice/*; the
+// standalone `serve` below uses bare paths. Detect which one is running.
+let apiPrefix = null;
+async function api(path, init) {
+  if (apiPrefix === null) {
+    const probe = await fetch(`${base}/api/voice/status`).catch(() => null);
+    apiPrefix = probe && probe.ok ? "/api/voice" : "";
+  }
+  return fetch(`${base}${apiPrefix}${path}`, init);
+}
 
 // ---------------------------------------------------------------- server ----
 if (cmd === "serve") {
@@ -73,25 +87,25 @@ else if (cmd === "speak") {
   const text = rest.filter(a => !a.startsWith("--")).join(" ");
   if (!text) { console.error("speak: no text"); process.exit(1); }
   if (process.env.VOICE_TTS === "say" && process.platform === "darwin") {
-    await fetch(`${base}/speak`, { method: "POST", body: JSON.stringify({ text: "" }) }).catch(() => {});
+    await api(`/speak`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) }).catch(() => {});
     spawn("say", [text], { stdio: "inherit" }).on("exit", () => process.exit(0));
   } else {
-    const r = await fetch(`${base}/speak`, { method: "POST", body: JSON.stringify({ text }) }).catch(() => null);
-    if (!r) { console.error(`bridge not running — start it with: node scripts/voice.mjs serve`); process.exit(2); }
+    const r = await api(`/speak`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) }).catch(() => null);
+    if (!r) { console.error(`voice bridge not running — start the workbench (cd web && npm run dev) or: node scripts/voice.mjs serve`); process.exit(2); }
     console.log("queued for speech");
   }
 } else if (cmd === "listen") {
   const max = argOf("--max") ?? 90;
-  const r = await fetch(`${base}/listen?max=${max}`).catch(() => null);
-  if (!r) { console.error(`bridge not running — start it with: node scripts/voice.mjs serve`); process.exit(2); }
+  const r = await api(`/listen?max=${max}`).catch(() => null);
+  if (!r) { console.error(`voice bridge not running — start the workbench (cd web && npm run dev) or: node scripts/voice.mjs serve`); process.exit(2); }
   const { text } = await r.json();
   if (text == null) { console.log("(no speech within " + max + "s — candidate may be thinking/drawing; call listen again or prompt them)"); process.exit(3); }
   console.log(text);
 } else if (cmd === "status") {
-  const r = await fetch(`${base}/status`).catch(() => null);
+  const r = await api(`/status`).catch(() => null);
   console.log(r ? JSON.stringify(await r.json()) : JSON.stringify({ up: false }));
 } else if (cmd === "log") {
-  const r = await fetch(`${base}/log`).catch(() => null);
+  const r = await api(`/log`).catch(() => null);
   console.log(r ? await r.text() : "(bridge not running)");
 } else {
   console.error("usage: voice.mjs serve|speak <text>|listen [--max N]|status|log");

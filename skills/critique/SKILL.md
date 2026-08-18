@@ -9,7 +9,7 @@ license: MIT
 Grade a diagram you drew on your own time. Same rubric as `/mock`, but diagram-centred and with more teaching.
 
 ## Steps
-1. Resolve session dir (arg, else most recent). Diagram = explicit path arg, else `<session>/canvas.excalidraw`. If the file is missing or only contains the starter title/legend, tell the user how to save from excalidraw.com to that path and stop.
+1. Resolve session dir (arg, else most recent). Diagram = explicit path arg, else `<session>/canvas.excalidraw`. If the file is missing or only contains the starter title/legend, tell the user to draw in the workbench (`http://localhost:7788/sessions/<dir>`, autosaves) or save from excalidraw.com to that path, and stop.
 2. Read `prompt.md`, `interviewer.md`, `notes.md` (if the user filled it), `rubric/rubric.md`.
 3. Run `node scripts/read-excalidraw.mjs <diagram>` and read the summary. If it looks mis-parsed (many `<unlabelled>` or `?` endpoints), also run with `--json` and reason from coordinates. Never guess at what an unlabelled box "probably" is — call it out.
 4. Reconstruct the design from the diagram + notes: components, read path, write path, sync/async, storage choices, partitioning, caching, failure handling. State explicitly what is **inferable from the artefact** vs. **absent**. In a real interview, absent from the whiteboard ≈ absent unless spoken.

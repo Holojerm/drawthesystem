@@ -8,7 +8,8 @@ System design interview practice for any coding agent that supports [Agent Skill
 - `scripts/excalidraw.mjs` — spec JSON → `.excalidraw` (layered auto-layout, coloured by `kind`); schema in the file header.
 - `scripts/read-excalidraw.mjs` — `.excalidraw` → markdown summary of boxes/arrows/labels (`--json` for raw). This is how the agent "sees" a diagram.
 - `scripts/to-clipboard.mjs` — copies a `.excalidraw` to the clipboard so Cmd+V pastes it into excalidraw.com (macOS `pbcopy`).
-- `scripts/voice.mjs` — zero-dep voice bridge: `serve` opens a browser page using Web Speech API; `speak "<text>"` / `listen` are what `/mock --voice` calls.
+- `scripts/voice.mjs` — `speak "<text>"` / `listen` / `status` / `log` CLI used by `/mock --voice`; targets the workbench's `/api/voice/*` when it's running, else `serve` runs a zero-dep fallback page.
+- `web/` — Nuxt 4 + Nuxt UI workbench (`npm run web`, http://localhost:7788): dashboard, companies, session workspace with Excalidraw embedded natively and **autosaving to `sessions/<id>/canvas.excalidraw`**, notes editor, feedback/solution tabs, timer, voice panel. The agent never calls the workbench except via `scripts/voice.mjs`; it reads/writes the same files.
 - `rubric/rubric.md` — 10-dimension senior/staff rubric + diagram checks; all grading references it.
 - `companies/<slug>/profile.md` — research output · `sessions/<date>-<slug>-<topic>/` — one folder per session · `progress.md` — one row per graded session.
 
@@ -16,7 +17,8 @@ System design interview practice for any coding agent that supports [Agent Skill
 - Never reveal `interviewer.md` during `/mock` — it is the hidden answer key.
 - Never fabricate company facts; profiles cite sources or say "not found" / "paste-only".
 - Generate diagrams via `scripts/excalidraw.mjs` from a spec — don't hand-write element JSON — and verify with `read-excalidraw.mjs` afterwards.
-- Excalidraw round-trip: the user edits at excalidraw.com and saves back to `<session>/canvas.excalidraw`; the agent reads from disk only.
+- Diagram round-trip: the user draws in the workbench (autosave) or at excalidraw.com (*Save to…*); either way the agent reads `<session>/canvas.excalidraw` from disk only.
 - Web research: use whatever search/fetch tools the host provides; if none, ask the user for URLs or pasted text.
-- Node ≥ 20, zero dependencies. Scripts are invoked relative to the repo root.
+- Node ≥ 20. `scripts/` and `skills/` are zero-dependency; only `web/` has a `node_modules`. Scripts are invoked relative to the repo root.
+- Session dir names are `YYYY-MM-DD-<slug>-<topic>` (the workbench parses this); `prompt.md` starts with `# Title` and a `_Company: … · Mode: breadth|depth · Time: N min …_` line.
 - Grade to the senior/staff bar unless the scenario says otherwise.

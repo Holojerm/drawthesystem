@@ -21,12 +21,10 @@ Turn a company profile into a concrete, timed practice scenario.
    - `interviewer.md` — hidden: expected clarifying questions & good answers, key numbers, the 2–3 "crux" decisions, expected deep-dive targets, follow-up probes ordered by difficulty, red flags, and a rubric emphasis line pointing at the user's historically weak dimensions. **Do not show this file to the user during the session.**
    - `canvas.excalidraw` — a starter canvas: title text + a small legend of colours (client / service / db / cache / queue / storage). Generate it with `node scripts/excalidraw.mjs` from a spec that has only the title and a `notes` block listing the legend; nodes list may be empty.
    - `notes.md` — empty template with headings: Requirements / Estimates / API & data model / High-level / Deep dive / Trade-offs / Open questions.
-3. Print the prompt and the exact commands to open the canvas:
-   ```
-   node scripts/to-clipboard.mjs sessions/<dir>/canvas.excalidraw   # then Cmd+V on excalidraw.com
-   ```
-   (or open the file via Cmd+O on excalidraw.com). Remind them to save back to the same path when done (`Save to...` → replace `canvas.excalidraw`).
-4. Offer: `/mock` to run it live now, or work async and `/critique` later.
+3. Print the prompt and how to open the canvas — two options, workbench first:
+   - **Workbench** (recommended): `npm run web` (once), then open `http://localhost:7788/sessions/<dir>`. Drawing autosaves to `canvas.excalidraw`; voice and notes live there too.
+   - **excalidraw.com**: `node scripts/to-clipboard.mjs sessions/<dir>/canvas.excalidraw`, Cmd+V on excalidraw.com, and *Save to…* back over `canvas.excalidraw` when done.
+4. Offer: `/mock` (add `--voice` if the workbench is open) to run it live now, or work async and `/critique` later.
 
 ## prompt.md template
 ```

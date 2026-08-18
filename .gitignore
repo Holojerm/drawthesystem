@@ -1,3 +1,12 @@
 node_modules/
 .DS_Store
-sessions/.voice-transcript.md
+# personal practice data — fork-local
+sessions/*
+!sessions/.gitkeep
+companies/*
+!companies/.gitkeep
+# nuxt
+web/.nuxt/
+web/.output/
+web/.data/
+web/dist/
