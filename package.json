@@ -5,13 +5,15 @@
   "description": "System design interview practice with any AI coding agent + Excalidraw. Skills for research, scenarios, mock interviews (text/voice), diagram critique, reference solutions.",
   "license": "MIT",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "workspaces": ["web"],
+  "engines": { "bun": ">=1.2" },
   "scripts": {
-    "web:install": "npm --prefix web install",
-    "web": "npm --prefix web run dev",
-    "web:build": "npm --prefix web run build",
-    "voice": "node scripts/voice.mjs serve",
-    "demo": "node -e \"const fs=require('fs');const d='sessions/'+new Date().toISOString().slice(0,10)+'-generic-url-shortener';fs.cpSync('examples/demo-session',d,{recursive:true});console.log('created '+d)\"",
-    "check": "node --check scripts/excalidraw.mjs && node --check scripts/read-excalidraw.mjs && node --check scripts/to-clipboard.mjs && node --check scripts/voice.mjs && node scripts/excalidraw.mjs examples/sample-spec.json /tmp/sdp-check.excalidraw && node scripts/read-excalidraw.mjs /tmp/sdp-check.excalidraw > /dev/null && echo ok"
+    "web": "bun run --cwd web dev",
+    "web:build": "bun run --cwd web build",
+    "web:preview": "bun run --cwd web preview",
+    "typecheck": "bun run --cwd web typecheck",
+    "voice": "bun scripts/voice.mjs serve",
+    "demo": "bun scripts/demo.mjs",
+    "check": "bun scripts/excalidraw.mjs examples/sample-spec.json /tmp/sdp-check.excalidraw && bun scripts/read-excalidraw.mjs /tmp/sdp-check.excalidraw > /dev/null && bun scripts/voice.mjs status > /dev/null; echo scripts ok"
   }
 }

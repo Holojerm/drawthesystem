@@ -1,9 +1,9 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * read-excalidraw.mjs — summarise a .excalidraw file as text so Claude can
  * critique a diagram without parsing raw JSON.
  *
- * Usage: node scripts/read-excalidraw.mjs path/to/diagram.excalidraw [--json]
+ * Usage: bun scripts/read-excalidraw.mjs path/to/diagram.excalidraw [--json]
  *
  * Output (markdown): a list of boxes (shapes with their labels), connections
  * (arrows with endpoints + labels), containers (large shapes enclosing others),

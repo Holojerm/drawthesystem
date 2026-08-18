@@ -1,9 +1,9 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * to-clipboard.mjs — copy a .excalidraw file to the macOS clipboard in
  * Excalidraw's clipboard format, so you can just press Cmd+V on excalidraw.com.
  *
- * Usage: node scripts/to-clipboard.mjs path/to/diagram.excalidraw
+ * Usage: bun scripts/to-clipboard.mjs path/to/diagram.excalidraw
  */
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";

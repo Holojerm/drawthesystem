@@ -17,7 +17,7 @@ Produce the "model answer" after the user has attempted the scenario. **Refuse (
    - Edge labels: verb + protocol or payload; `style: "dashed"` for async.
    - `groups` for service boundaries or regions when they clarify.
    - `notes` block: key numbers, consistency choices, and the crux in one line each (≤ 6 bullets).
-4. Run `node scripts/excalidraw.mjs <session>/solution-spec.json <session>/solution.excalidraw`, then `node scripts/read-excalidraw.mjs <session>/solution.excalidraw` and confirm the summary matches your intent (no dangling arrows, every node labelled). Fix the spec and regenerate if not.
+4. Run `bun scripts/excalidraw.mjs <session>/solution-spec.json <session>/solution.excalidraw`, then `bun scripts/read-excalidraw.mjs <session>/solution.excalidraw` and confirm the summary matches your intent (no dangling arrows, every node labelled). Fix the spec and regenerate if not.
 5. Write `<session>/solution.md`:
 ```
 # Reference solution — <title>
@@ -33,4 +33,4 @@ Produce the "model answer" after the user has attempted the scenario. **Refuse (
 ## Diff vs. your attempt — 3–6 bullets from feedback.md: what you had, what's different, why it matters
 ## Talk track — 60-second summary you could say out loud
 ```
-6. Print: how to view it — workbench `http://localhost:7788/sessions/<dir>` → *Solution* toggle (read-only, side by side with their canvas via the toggle), or `node scripts/to-clipboard.mjs <session>/solution.excalidraw` → Cmd+V on excalidraw.com — and the *Diff vs. your attempt* section. Suggest they redraw from memory tomorrow and `/critique` again.
+6. Print: how to view it — workbench `http://localhost:7788/sessions/<dir>` → *Solution* toggle (read-only, side by side with their canvas via the toggle), or `bun scripts/to-clipboard.mjs <session>/solution.excalidraw` → Cmd+V on excalidraw.com — and the *Diff vs. your attempt* section. Suggest they redraw from memory tomorrow and `/critique` again.

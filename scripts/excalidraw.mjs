@@ -1,10 +1,10 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * excalidraw.mjs — build a valid .excalidraw file from a simple graph spec.
  *
  * Usage:
- *   node scripts/excalidraw.mjs spec.json out.excalidraw
- *   cat spec.json | node scripts/excalidraw.mjs - out.excalidraw
+ *   bun scripts/excalidraw.mjs spec.json out.excalidraw
+ *   cat spec.json | bun scripts/excalidraw.mjs - out.excalidraw
  *
  * Spec format (JSON):
  * {

@@ -1,12 +1,12 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * voice.mjs — browser-native voice bridge for /mock (zero deps).
  *
- *   node scripts/voice.mjs serve [--port 7788]   # start bridge + open http://localhost:7788 in a browser (Chrome/Safari)
- *   node scripts/voice.mjs speak "text"          # interviewer says this (browser TTS via speechSynthesis)
- *   node scripts/voice.mjs listen [--max 90]     # block until the candidate finishes an utterance; print transcript
- *   node scripts/voice.mjs status                # is the bridge up and a browser attached?
- *   node scripts/voice.mjs log                   # print sessions transcript so far
+ *   bun scripts/voice.mjs serve [--port 7788]   # start bridge + open http://localhost:7788 in a browser (Chrome/Safari)
+ *   bun scripts/voice.mjs speak "text"          # interviewer says this (browser TTS via speechSynthesis)
+ *   bun scripts/voice.mjs listen [--max 90]     # block until the candidate finishes an utterance; print transcript
+ *   bun scripts/voice.mjs status                # is the bridge up and a browser attached?
+ *   bun scripts/voice.mjs log                   # print sessions transcript so far
  *
  * The page uses the Web Speech API (SpeechRecognition + speechSynthesis): free,
  * no keys, works in Chrome and Safari. Premium engines can be swapped in by
@@ -91,13 +91,13 @@ else if (cmd === "speak") {
     spawn("say", [text], { stdio: "inherit" }).on("exit", () => process.exit(0));
   } else {
     const r = await api(`/speak`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) }).catch(() => null);
-    if (!r) { console.error(`voice bridge not running — start the workbench (cd web && npm run dev) or: node scripts/voice.mjs serve`); process.exit(2); }
+    if (!r) { console.error(`voice bridge not running — start the workbench (bun run web) or: bun scripts/voice.mjs serve`); process.exit(2); }
     console.log("queued for speech");
   }
 } else if (cmd === "listen") {
   const max = argOf("--max") ?? 90;
   const r = await api(`/listen?max=${max}`).catch(() => null);
-  if (!r) { console.error(`voice bridge not running — start the workbench (cd web && npm run dev) or: node scripts/voice.mjs serve`); process.exit(2); }
+  if (!r) { console.error(`voice bridge not running — start the workbench (bun run web) or: bun scripts/voice.mjs serve`); process.exit(2); }
   const { text } = await r.json();
   if (text == null) { console.log("(no speech within " + max + "s — candidate may be thinking/drawing; call listen again or prompt them)"); process.exit(3); }
   console.log(text);
@@ -174,7 +174,7 @@ document.addEventListener("keyup",e=>{if(ptt.checked&&e.code==="Space"&&wantList
 let speaking=Promise.resolve();
 async function poll(){try{const r=await fetch("/poll");const {speak:items,listening}=await r.json();
   status.textContent="connected · "+(wantListening?"mic on":"mic off")+(listening?" · interviewer is waiting for you":"");
-  for(const t of items){if(t){add("ai",t);speaking=speaking.then(()=>speak(t));}}}catch{status.textContent="bridge disconnected — restart: node scripts/voice.mjs serve";}
+  for(const t of items){if(t){add("ai",t);speaking=speaking.then(()=>speak(t));}}}catch{status.textContent="bridge disconnected — restart: bun scripts/voice.mjs serve";}
   setTimeout(poll,700);}
 poll();
 </script></body></html>`;

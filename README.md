@@ -17,12 +17,12 @@ Your agent (Claude Code, Codex CLI, Cursor, Gemini CLI, OpenCode, …) plays res
 
 ```bash
 git clone https://github.com/jeremyettlinger/sysdesign-prep && cd sysdesign-prep
-npm run web:install && npm run web        # workbench at http://localhost:7788 (Node ≥ 20)
+bun install && bun run web        # workbench at http://localhost:7788 (Bun ≥ 1.2)
 ```
 
 In a second terminal at the repo root start your agent (`claude`, `codex`, …) — the skills in `skills/` are auto-discovered — and run `/research <company>` then `/scenario <slug>`. Open the session in the workbench, hit the timer, and `/mock --voice`.
 
-Want to try it before researching anything? `npm run demo` drops a sample session in `sessions/`.
+Want to try it before researching anything? `bun run demo` drops a sample session in `sessions/`.
 
 ## What's in the box
 
@@ -44,7 +44,7 @@ Sessions and company profiles are git-ignored (they're yours); `progress.md` is 
 ```
  terminal: your agent ──runs──▶ skills/*.md ──read/write──▶ sessions/<id>/{prompt,interviewer,notes,feedback,solution}.md
                      │                                       sessions/<id>/canvas.excalidraw ◀──autosave── workbench (Excalidraw)
-                     └──node scripts/voice.mjs speak|listen──▶ workbench /api/voice ◀──▶ browser STT/TTS
+                     └──bun scripts/voice.mjs speak|listen──▶ workbench /api/voice ◀──▶ browser STT/TTS
 ```
 The agent never talks to the browser directly; it reads and writes files and calls two tiny CLIs. That's what keeps it model- and agent-agnostic.
 
@@ -54,7 +54,7 @@ Browser-native (Web Speech API): free, no keys, works in Chrome and Safari. Push
 
 ## Without the workbench
 
-Everything works with plain files: `node scripts/to-clipboard.mjs <file>.excalidraw` → Cmd+V on excalidraw.com → *Save to…* back over `sessions/<id>/canvas.excalidraw`. `node scripts/voice.mjs serve` gives you a bare voice page.
+Everything works with plain files: `bun scripts/to-clipboard.mjs <file>.excalidraw` → Cmd+V on excalidraw.com → *Save to…* back over `sessions/<id>/canvas.excalidraw`. `bun scripts/voice.mjs serve` gives you a bare voice page.
 
 ## Contributing
 
