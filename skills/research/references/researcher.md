@@ -3,6 +3,7 @@
 Goal: a `profile.md` that lets another agent invent a realistic, company-flavoured system design prompt for a **senior/staff** candidate. Be concrete and cite a URL for every non-obvious claim.
 
 ## Gathering sources (adapt to whatever tools you have)
+- **Tools deferred?** Some hosts (Claude Code subagents, for one) don't expose web search/fetch until you load them (`ToolSearch "select:WebSearch,WebFetch"`). Do that first — an agent that skips it writes a paste-only profile by accident.
 - **Have web search?** Run the queries below.
 - **Have fetch but no search?** Ask the user for 3–6 URLs (eng blog index, a talk, the JD) and fetch those.
 - **Neither?** Ask the user to paste the JD and any blog posts; work from that and say the profile is paste-only.

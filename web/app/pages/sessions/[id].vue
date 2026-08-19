@@ -46,6 +46,8 @@ useIntervalFn(async () => {
   if (s.state?.startedAt && s.state.startedAt !== startedAt.value) startedAt.value = s.state.startedAt;
   if (s.state?.startedAt && s.state?.endedAt) startedAt.value = 0;
   if (s.state?.minutes) stateMinutes.value = s.state.minutes;
+  pausedAt.value = s.state?.pausedAt ?? 0;
+  pausedMs.value = s.state?.pausedMs ?? 0;
   if (view.value !== "canvas") {
     if (s.solutionMtime && knownSolutionMtime && s.solutionMtime > knownSolutionMtime + 50) { knownSolutionMtime = s.solutionMtime; await loadCanvas("solution"); toast.add({ title: "Solution updated", icon: "i-lucide-refresh-cw" }); }
     else if (s.solutionMtime && !knownSolutionMtime) knownSolutionMtime = s.solutionMtime;
@@ -87,11 +89,14 @@ async function saveNotes() {
 const stateMinutes = ref<number | null>(null);
 const minutes = computed(() => stateMinutes.value ?? session.value?.minutes ?? 45);
 const startedAt = useLocalStorage<number>(`sdp.timer.${id.value}`, 0);
+// `bun scripts/session.mjs pause|resume` — paused time doesn't count; the button shows ⏸ while paused.
+const pausedAt = ref(0);
+const pausedMs = ref(0);
 const now = ref(Date.now());
 useIntervalFn(() => (now.value = Date.now()), 1000);
-const elapsed = computed(() => startedAt.value ? Math.floor((now.value - startedAt.value) / 1000) : 0);
+const elapsed = computed(() => startedAt.value ? Math.floor(((pausedAt.value || now.value) - startedAt.value - pausedMs.value) / 1000) : 0);
 const remaining = computed(() => minutes.value * 60 - elapsed.value);
-const clock = computed(() => { const s = Math.abs(remaining.value); return `${remaining.value < 0 ? "-" : ""}${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; });
+const clock = computed(() => { const s = Math.abs(remaining.value); return `${pausedAt.value ? "⏸ " : ""}${remaining.value < 0 ? "-" : ""}${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; });
 const timerColor = computed(() => !startedAt.value ? "neutral" : remaining.value < 0 ? "error" : remaining.value < 600 ? "warning" : "primary");
 function toggleTimer() { startedAt.value = startedAt.value ? 0 : Date.now(); }
 

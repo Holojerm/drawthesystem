@@ -36,7 +36,7 @@ In a second terminal at the repo root, start your agent (`claude`, `codex`, …)
 | `web/` | Nuxt 4 + Nuxt UI workbench: dashboard, companies, session workspace with embedded Excalidraw (autosaves to `canvas.excalidraw`), notes, feedback/solution tabs, timer, voice panel |
 | `scripts/excalidraw.mjs` | JSON graph spec → `.excalidraw` (how the agent draws) |
 | `scripts/read-excalidraw.mjs` | `.excalidraw` → text summary of boxes/arrows/labels (how the agent sees your diagram) |
-| `scripts/session.mjs` | Shared interview clock (`start` / `elapsed` / `stop`) the workbench timer follows |
+| `scripts/session.mjs` | Shared interview clock (`start` / `elapsed` / `pause` / `resume` / `stop`) the workbench timer follows |
 | `scripts/voice.mjs` | `speak` / `listen` CLI used by `/mock --voice`; `serve` is a zero-dep fallback page |
 | `scripts/to-clipboard.mjs` | Copy a diagram in Excalidraw's paste format for excalidraw.com |
 

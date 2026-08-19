@@ -16,12 +16,12 @@ const { data: companies } = await useFetch("/api/companies");
           </div>
         </template>
         <ul v-if="c.tldr?.length" class="text-sm space-y-1 mb-4">
-          <li v-for="(t, i) in c.tldr" :key="i" class="flex gap-2"><UIcon name="i-lucide-dot" class="shrink-0 mt-0.5" /><span>{{ t }}</span></li>
+          <li v-for="(t, i) in c.tldr" :key="i" class="flex gap-2"><UIcon name="i-lucide-dot" class="shrink-0 mt-0.5" /><span v-html="renderInline(t)" /></li>
         </ul>
         <div class="text-xs uppercase tracking-wide text-muted mb-1">Scenario seeds</div>
         <ol class="text-sm space-y-1.5 list-decimal pl-5">
           <li v-for="(s, i) in c.seeds" :key="i">
-            <span>{{ s }}</span>
+            <span v-html="renderInline(s)" />
             <code class="ml-2 text-xs text-muted">/scenario {{ c.slug }} {{ i + 1 }}</code>
           </li>
         </ol>

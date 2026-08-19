@@ -7,8 +7,9 @@
  *
  * Output (markdown): a list of boxes (shapes with their labels), connections
  * (arrows with endpoints + labels), containers (large shapes enclosing others),
- * and any free-floating text. Text that isn't bound to a shape is attributed
- * to the shape it overlaps, if any.
+ * and any free-floating text. Text bound to a shape or arrow (containerId) is
+ * its label; unbound text is attributed to the shape it overlaps, if any.
+ * Connections and container members use the first line of a label as the name.
  */
 import { readFileSync } from "node:fs";
 
@@ -75,8 +76,14 @@ for (const t of texts) {
 }
 const label = e => (labelOf.get(e.id) ?? []).join(" / ") || null;
 
-// Give every labelled shape a short name for the report
-const nameOf = e => label(e) ?? `<unlabelled ${e.type} @${Math.round(e.x)},${Math.round(e.y)}>`;
+// Give every labelled shape a short name for the report: the first line of its
+// label (the "title"); the full multi-line label is listed under Components.
+const nameOf = e => {
+  const l = label(e);
+  if (!l) return `<unlabelled ${e.type} @${Math.round(e.x)},${Math.round(e.y)}>`;
+  const first = l.split(" | ")[0].trim();
+  return first || l;
+};
 
 // Resolve arrow endpoints: binding first, else nearest shape to the endpoint
 function endpointShape(a, which) {

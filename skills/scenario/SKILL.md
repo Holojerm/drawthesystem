@@ -19,7 +19,7 @@ Turn a company profile into a concrete, timed practice scenario.
 2. Create `sessions/<YYYY-MM-DD>-<slug>-<short-topic>/` containing:
    - `prompt.md` — what the candidate sees (see template below).
    - `interviewer.md` — hidden: expected clarifying questions & good answers, key numbers, the 2–3 "crux" decisions, expected deep-dive targets, follow-up probes ordered by difficulty, red flags, and a rubric emphasis line pointing at the user's historically weak dimensions. **Do not show this file to the user during the session.**
-   - `canvas.excalidraw` — a starter canvas: title text + a small legend of colours (client / service / db / cache / queue / storage). Generate it with `bun scripts/excalidraw.mjs` from a spec that has only the title and a `notes` block listing the legend; nodes list may be empty.
+   - `canvas.excalidraw` — a starter canvas: title text + a small legend of colours (client / service / db / cache / queue / storage). Write the spec to `canvas-spec.json` in the session dir (title + a `notes` block listing the legend; `nodes`/`edges` empty) and generate with `bun scripts/excalidraw.mjs <dir>/canvas-spec.json <dir>/canvas.excalidraw`; verify with `bun scripts/read-excalidraw.mjs`. Keeping the spec lets `/mock` append to it if it has to transcribe for the candidate.
    - `notes.md` — empty template with headings: Requirements / Estimates / API & data model / High-level / Deep dive / Trade-offs / Open questions.
 3. Print the prompt and how to open the canvas:
    - Workbench (preferred): `bun run web`, then `http://localhost:7788/sessions/<dir>` — autosaves to `canvas.excalidraw`.

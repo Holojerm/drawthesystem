@@ -32,6 +32,10 @@
  * a lane route around the diagram for a long/backward edge.
  * `kind` picks a colour: client | service | db | cache | queue | storage |
  * external | lb | cdn | note (default: service).
+ * Node height grows with the label (wrapped to the node width), so 4–6 line
+ * labels don't clip; rows take the height of their tallest node. Edge labels are
+ * real Excalidraw arrow labels (text bound to the arrow), so the workbench treats
+ * them like hand-made ones and read-excalidraw attributes them to the edge.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -216,6 +220,21 @@ function routeEdge(e, a, b, rects, bounds) {
   return candidates[0] ?? attempts[0];
 }
 
+// Greedy word wrap to `cols` characters; explicit newlines are kept.
+function wrapText(text, cols) {
+  const out = [];
+  for (const para of String(text).split("\n")) {
+    let cur = "";
+    for (const w of para.split(/\s+/).filter(Boolean)) {
+      if (!cur) cur = w;
+      else if ((cur + " " + w).length <= cols) cur += " " + w;
+      else { out.push(cur); cur = w; }
+    }
+    out.push(cur);
+  }
+  return out.length ? out : [""];
+}
+
 function arrowFromPath(pts, a, b, label, style = "solid") {
   const x0 = pts[0].x, y0 = pts[0].y;
   const rel = pts.map(p => [p.x - x0, p.y - y0]);
@@ -235,14 +254,22 @@ function arrowFromPath(pts, a, b, label, style = "solid") {
   b.boundElements.push({ id: arrow.id, type: "arrow" });
   const out = [arrow];
   if (label) {
-    // label sits on the longest segment
-    let best = 0, bi = 1;
-    for (let i = 1; i < pts.length; i++) { const L = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); if (L > best) { best = L; bi = i; } }
-    const mx = (pts[bi].x + pts[bi - 1].x) / 2, my = (pts[bi].y + pts[bi - 1].y) / 2;
-    const fontSize = 13, tw = label.length * fontSize * 0.58 + 10, th = fontSize * 1.25 + 4;
-    const vertical = Math.abs(pts[bi].x - pts[bi - 1].x) < 2;
-    const t = textEl(label, vertical ? mx + 6 : mx - tw / 2, vertical ? my - th / 2 : my - th - 2, tw, th, { fontSize, align: vertical ? "left" : "center" });
-    t.backgroundColor = "#ffffff"; // legibility over lines (Excalidraw ignores bg on text; harmless)
+    // Excalidraw-native arrow label: text bound to the arrow (containerId), placed
+    // where Excalidraw itself would put it (middle vertex for an odd point count,
+    // middle-segment midpoint for an even one) and wrapped to the width it allows
+    // (70% of the arrow's width, at least 11× the font size) — so the workbench
+    // won't move or re-wrap it on first touch.
+    const fontSize = 13, charW = fontSize * 0.58, lineH = fontSize * 1.25;
+    const arrowW = Math.max(...xs) - Math.min(...xs);
+    const maxW = Math.max(0.7 * arrowW, fontSize * 11);
+    const lines = wrapText(label, Math.max(8, Math.floor(maxW / charW)));
+    const tw = Math.min(maxW, Math.max(...lines.map(l => l.length)) * charW + 6), th = lines.length * lineH;
+    let mx, my;
+    if (pts.length % 2 === 1) { const p = pts[(pts.length - 1) / 2]; mx = p.x; my = p.y; }
+    else { const i = pts.length / 2 - 1; mx = (pts[i].x + pts[i + 1].x) / 2; my = (pts[i].y + pts[i + 1].y) / 2; }
+    const t = textEl(lines.join("\n"), mx - tw / 2, my - th / 2, tw, th, { fontSize, containerId: arrow.id });
+    t.originalText = label;
+    arrow.boundElements.push({ id: t.id, type: "text" });
     out.push(t);
   }
   return out;
@@ -266,8 +293,6 @@ export function buildExcalidraw(spec) {
     layers.get(l).push(n);
   }
   const layerKeys = [...layers.keys()].sort((a, b) => a - b);
-  const maxRows = Math.max(1, ...[...layers.values()].map(v => v.length));
-  const totalH = maxRows * NODE_H + (maxRows - 1) * ROW_GAP;
 
   // With groups: top-align columns and put group members first (in group order)
   // so a group's frame forms a clean horizontal band instead of swallowing
@@ -276,21 +301,36 @@ export function buildExcalidraw(spec) {
   (spec.groups ?? []).forEach((g, gi) => (g.nodes ?? []).forEach(id => { if (!groupRank.has(id)) groupRank.set(id, gi); }));
   const hasGroups = groupRank.size > 0;
 
-  // Node width adapts to the longest label line; column width to its widest node.
-  const widthOf = n => n.width ?? Math.min(360, Math.max(NODE_W, Math.max(...String(n.label ?? n.id).split("\n").map(l => l.length)) * 16 * 0.62 + 28));
+  // Node width adapts to the longest label line (capped, so long lines wrap);
+  // node height adapts to the wrapped line count; a row is as tall as its
+  // tallest node; column width is its widest node.
+  const CHAR_W = 16 * 0.62, LINE_H = 16 * 1.25, PAD = 10;
+  const widthOf = n => n.width ?? Math.min(360, Math.max(NODE_W, Math.max(...String(n.label ?? n.id).split("\n").map(l => l.length)) * CHAR_W + 28));
+  const linesOf = n => String(n.label ?? n.id).split("\n").reduce((acc, l) => acc + Math.max(1, Math.ceil((l.length * CHAR_W) / (widthOf(n) - 2 * PAD))), 0);
+  const heightOf = n => n.height ?? Math.max(NODE_H, linesOf(n) * LINE_H + 2 * PAD + 8);
+  for (const l of layerKeys) if (hasGroups) layers.get(l).sort((a, b) => (groupRank.get(a.id) ?? 1e9) - (groupRank.get(b.id) ?? 1e9));
+  // Effective row = explicit `row`, else position in the column. Row height = tallest node in it.
+  const rowH = [];
+  for (const l of layerKeys) layers.get(l).forEach((n, i) => { const r = n.row ?? i; rowH[r] = Math.max(rowH[r] ?? NODE_H, heightOf(n)); });
+  for (let r = 0; r < rowH.length; r++) rowH[r] = rowH[r] ?? NODE_H;
+  const rowY = []; { let y = yTop; for (let r = 0; r < rowH.length; r++) { rowY[r] = y; y += rowH[r] + ROW_GAP; } }
+  const totalH = rowH.reduce((a, h) => a + h, 0) + (rowH.length - 1) * ROW_GAP;
+
   const colX = new Map(); let runX = MARGIN;
   for (const l of layerKeys) { colX.set(l, runX); runX += Math.max(...layers.get(l).map(widthOf)) + COL_GAP; }
 
   for (const l of layerKeys) {
     const col = layers.get(l);
-    if (hasGroups) col.sort((a, b) => (groupRank.get(a.id) ?? 1e9) - (groupRank.get(b.id) ?? 1e9));
-    const colH = col.length * NODE_H + (col.length - 1) * ROW_GAP;
-    const yStart = hasGroups ? yTop : yTop + (totalH - colH) / 2;
+    const colH = col.reduce((a, n) => a + heightOf(n), 0) + (col.length - 1) * ROW_GAP;
+    const usesRows = hasGroups || col.some(n => n.row != null);
+    const yStart = usesRows ? yTop : yTop + (totalH - colH) / 2;
     const colW = Math.max(...col.map(widthOf));
+    let stackY = yStart;
     col.forEach((n, i) => {
-      const w = widthOf(n), h = n.height ?? NODE_H;
+      const w = widthOf(n), h = heightOf(n);
       const x = n.x ?? colX.get(l) + (colW - w) / 2;   // centre within the column
-      const y = n.y ?? (n.row != null ? yTop + n.row * (NODE_H + ROW_GAP) : yStart + i * (NODE_H + ROW_GAP));
+      const y = n.y ?? (usesRows ? rowY[n.row ?? i] : stackY);
+      stackY += h + ROW_GAP;
       const style = KIND_STYLE[n.kind ?? "service"] ?? KIND_STYLE.service;
       const [rect, t] = rectWithLabel(x, y, w, h, n.label ?? n.id, style);
       byId.set(n.id, rect);
@@ -344,8 +384,7 @@ export function buildExcalidraw(spec) {
 
   // Free-floating notes bottom-left
   if (spec.notes?.length) {
-    const rowsUsed = Math.max(maxRows, ...(spec.nodes ?? []).map(n => (n.row ?? 0) + 1));
-    const y = yTop + rowsUsed * (NODE_H + ROW_GAP) + 120;
+    const y = (rects.length ? bounds.bottom : yTop) + 80 + laneCounters.bottom * 26;
     const text = spec.notes.map(n => "• " + n).join("\n");
     const nw = Math.min(1400, Math.max(520, Math.max(...spec.notes.map(n => n.length)) * 16 * 0.55 + 60));
     const [rect, t] = rectWithLabel(MARGIN, y, nw, 30 + spec.notes.length * 22, text, KIND_STYLE.note);
