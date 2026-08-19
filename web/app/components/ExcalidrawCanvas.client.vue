@@ -60,6 +60,9 @@ async function load(scene: Scene) {
   await new Promise(r => setTimeout(r, 50));
   if (scene.elements?.length) api.scrollToContent(undefined, { fitToContent: true, animate: false });
   await new Promise(r => setTimeout(r, 200)); // let Excalidraw settle before accepting changes
+  // Baseline from what Excalidraw actually holds post-normalisation (it may add
+  // fractional indices / bump versions), so a mere click never looks like an edit.
+  lastSig = sig(api.getSceneElementsIncludingDeleted() as any[]);
   ready = true;
 }
 

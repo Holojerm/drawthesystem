@@ -23,7 +23,9 @@
  * }
  *
  * Layout: nodes are placed in columns by `layer` (0 = leftmost) and stacked
- * vertically in the order given. You may override with explicit `x`,`y`.
+ * vertically in the order given (group members first when `groups` exist, so a
+ * group's frame is a clean band — keep each group's members in adjacent layers
+ * and at most one per column where possible). Override with explicit `x`,`y`.
  * `kind` picks a colour: client | service | db | cache | queue | storage |
  * external | lb | cdn | note (default: service).
  */
@@ -178,10 +180,18 @@ export function buildExcalidraw(spec) {
   const maxRows = Math.max(1, ...[...layers.values()].map(v => v.length));
   const totalH = maxRows * NODE_H + (maxRows - 1) * ROW_GAP;
 
+  // With groups: top-align columns and put group members first (in group order)
+  // so a group's frame forms a clean horizontal band instead of swallowing
+  // unrelated nodes. Without groups: vertically centre each column.
+  const groupRank = new Map();
+  (spec.groups ?? []).forEach((g, gi) => (g.nodes ?? []).forEach(id => { if (!groupRank.has(id)) groupRank.set(id, gi); }));
+  const hasGroups = groupRank.size > 0;
+
   for (const l of layerKeys) {
     const col = layers.get(l);
+    if (hasGroups) col.sort((a, b) => (groupRank.get(a.id) ?? 1e9) - (groupRank.get(b.id) ?? 1e9));
     const colH = col.length * NODE_H + (col.length - 1) * ROW_GAP;
-    const yStart = yTop + (totalH - colH) / 2;
+    const yStart = hasGroups ? yTop : yTop + (totalH - colH) / 2;
     col.forEach((n, i) => {
       const x = n.x ?? MARGIN + layerKeys.indexOf(l) * (NODE_W + COL_GAP);
       const y = n.y ?? yStart + i * (NODE_H + ROW_GAP);

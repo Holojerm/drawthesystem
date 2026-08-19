@@ -11,7 +11,7 @@ if (!session.value) throw createError({ statusCode: 404, statusMessage: "Session
 // ---- canvas ---------------------------------------------------------------
 type Scene = { elements: any[]; appState?: Record<string, any>; files?: Record<string, any>; mtime?: number | null };
 const view = ref<"canvas" | "solution">("canvas");
-const canvas = ref<{ load: (s: Scene) => Promise<void> } | null>(null);
+const canvas = ref<{ load: (s: Scene) => Promise<void>; getScene?: () => any } | null>(null);
 const saveState = ref<"saved" | "saving" | "dirty" | "error">("saved");
 const savedAt = ref<number | null>(null);
 let knownMtime: number | null = null;
@@ -24,20 +24,33 @@ async function loadCanvas(which: "canvas" | "solution" = "canvas") {
 
 async function onCanvasChange(sc: { elements: any[]; appState: any; files: any }) {
   if (view.value !== "canvas") return;
+  if (externalChange.value) { saveState.value = "dirty"; return; } // don't fight the disk; user must choose
   saveState.value = "saving";
   try {
-    const r = await $fetch<{ mtime: number }>(`/api/sessions/${id.value}/canvas`, { method: "PUT", body: sc });
+    const r = await $fetch<{ mtime: number }>(`/api/sessions/${id.value}/canvas`, { method: "PUT", body: { ...sc, baseMtime: knownMtime } });
     knownMtime = r.mtime; savedAt.value = Date.now(); saveState.value = "saved";
-  } catch { saveState.value = "error"; }
+  } catch (e: any) {
+    if (e?.statusCode === 409 || e?.status === 409) { externalChange.value = true; saveState.value = "dirty"; }
+    else saveState.value = "error";
+  }
 }
-// If the agent (or excalidraw.com "Save to…") rewrote canvas.excalidraw on disk, offer to reload.
+// If the agent (or excalidraw.com "Save to…") rewrote canvas.excalidraw on disk:
+// reload silently when this tab has no unsaved edits, otherwise offer reload / overwrite.
 const externalChange = ref(false);
 useIntervalFn(async () => {
-  if (view.value !== "canvas") return;
+  if (view.value !== "canvas" || saveState.value === "saving") return;
   const s = await $fetch(`/api/sessions/${id.value}`).catch(() => null);
-  if (s && s.canvasMtime && knownMtime && s.canvasMtime > knownMtime + 50 && saveState.value !== "saving") externalChange.value = true;
-}, 3000);
-async function reloadFromDisk() { externalChange.value = false; await loadCanvas("canvas"); toast.add({ title: "Canvas reloaded from disk", icon: "i-lucide-refresh-cw" }); }
+  if (s && s.canvasMtime && knownMtime && s.canvasMtime > knownMtime + 50) {
+    if (saveState.value === "saved") { await loadCanvas("canvas"); toast.add({ title: "Canvas updated from disk", icon: "i-lucide-refresh-cw" }); }
+    else externalChange.value = true;
+  }
+}, 2000);
+async function reloadFromDisk() { externalChange.value = false; await loadCanvas("canvas"); saveState.value = "saved"; toast.add({ title: "Canvas reloaded from disk", icon: "i-lucide-refresh-cw" }); }
+async function overwriteDisk() {
+  const sc = canvas.value?.getScene?.(); if (!sc) return;
+  externalChange.value = false; knownMtime = null;
+  await onCanvasChange(sc);
+}
 async function switchView(v: "canvas" | "solution") { if (v === view.value) return; await loadCanvas(v); view.value = v; }
 
 // ---- side panel -----------------------------------------------------------
@@ -108,7 +121,10 @@ useHead({ title: () => `${session.value?.title ?? "Session"} · sysdesign-prep` 
           <template v-else-if="savedAt">saved · canvas.excalidraw</template>
           <template v-else>autosaves to sessions/{{ id }}/canvas.excalidraw</template>
         </span>
-        <UButton v-if="externalChange" size="xs" color="warning" variant="subtle" icon="i-lucide-refresh-cw" @click="reloadFromDisk">File changed on disk — reload</UButton>
+        <template v-if="externalChange">
+          <UButton size="xs" color="warning" variant="subtle" icon="i-lucide-refresh-cw" @click="reloadFromDisk">Changed on disk — reload</UButton>
+          <UButton size="xs" color="neutral" variant="ghost" @click="overwriteDisk">keep mine</UButton>
+        </template>
         <UButton :color="timerColor" :variant="startedAt ? 'subtle' : 'outline'" size="xs" :icon="startedAt ? 'i-lucide-square' : 'i-lucide-timer'" class="tabular-nums font-mono" @click="toggleTimer">{{ startedAt ? clock : `${minutes}:00` }}</UButton>
         <template v-if="!narrow">
           <UButton :icon="showSide ? 'i-lucide-panel-left-close' : 'i-lucide-panel-left-open'" color="neutral" variant="ghost" size="xs" aria-label="Toggle side panel" @click="showSide = !showSide" />
