@@ -9,7 +9,7 @@ Your agent (Claude Code, Codex CLI, Cursor, Gemini CLI, OpenCode, …) plays res
 /scenario stripe 3           # company-flavoured prompt + hidden interviewer notes + canvas → sessions/…
 /mock --voice                # timed, spoken mock interview; "look at the diagram" any time → feedback.md
 /critique                    # async: grade canvas + notes against the rubric
-/solution                    # reference architecture (.excalidraw + walkthrough + diff vs. yours)
+/solution                    # reference architecture: full map + realistic 45-min answer + diff vs. yours
 /progress                    # trends per rubric dimension, what to drill next
 ```
 

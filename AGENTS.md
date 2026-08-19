@@ -22,4 +22,4 @@ System design interview practice for any coding agent that supports [Agent Skill
 - Web research: use whatever search/fetch tools the host provides; if none, ask the user for URLs or pasted text.
 - Bun ≥ 1.2 (`scripts/` also run under Node ≥ 20). `scripts/` and `skills/` are zero-dependency; only `web/` has a `node_modules`. Scripts are invoked relative to the repo root.
 - Session dir names are `YYYY-MM-DD-<slug>-<topic>` (the workbench parses this); `prompt.md` starts with `# Title` and a `_Company: … · Mode: breadth|depth · Time: N min …_` line.
-- Grade to the senior/staff bar unless the scenario says otherwise.
+- Grade to the senior/staff bar unless the scenario says otherwise — depth of justification and finding the crux unled, not breadth of drawing. `/solution` produces both `solution.excalidraw` (full map, for study) and `solution-45min.excalidraw` (what a strong candidate actually draws in the room).

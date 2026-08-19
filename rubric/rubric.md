@@ -2,6 +2,8 @@
 
 Score each dimension 1–5. Overall bar for Senior ≈ 3.5 avg with no 1s; Staff ≈ 4+ avg with ≥4 on Deep Dive, Trade-offs, and Communication.
 
+A 5 is about **depth of justification, not breadth of drawing**. In 45 minutes a strong Staff candidate produces ~10–12 boxes, a handful of spoken numbers, one real deep dive, and finds the crux without being led. Grade against that, not against the reference solution's complete map.
+
 | # | Dimension | 1 (weak) | 3 (solid) | 5 (staff+) |
 |---|-----------|----------|-----------|------------|
 | 1 | **Requirements & scoping** | Jumps to boxes; never asks who the users are or what "done" means | Clarifies functional + non-functional reqs, states what's out of scope | Identifies the *hard* requirement that shapes the design (e.g. consistency vs. availability, fan-out ratio) and drives everything from it |

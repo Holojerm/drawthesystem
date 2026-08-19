@@ -10,14 +10,15 @@ if (!session.value) throw createError({ statusCode: 404, statusMessage: "Session
 
 // ---- canvas ---------------------------------------------------------------
 type Scene = { elements: any[]; appState?: Record<string, any>; files?: Record<string, any>; mtime?: number | null };
-const view = ref<"canvas" | "solution">("canvas");
+type View = "canvas" | "solution" | "solution45";
+const view = ref<View>("canvas");
 const canvas = ref<{ load: (s: Scene) => Promise<void>; getScene?: () => any } | null>(null);
 const saveState = ref<"saved" | "saving" | "dirty" | "error">("saved");
 const savedAt = ref<number | null>(null);
 let knownMtime: number | null = null;
 let knownSolutionMtime: number | null = null;
 
-async function loadCanvas(which: "canvas" | "solution" = "canvas") {
+async function loadCanvas(which: View = "canvas") {
   const s = await $fetch<Scene>(`/api/sessions/${id.value}/canvas`, { query: { which } });
   if (which === "canvas") knownMtime = s.mtime ?? null; else knownSolutionMtime = s.mtime ?? null;
   await canvas.value?.load(s);
@@ -45,7 +46,7 @@ useIntervalFn(async () => {
   if (s.state?.startedAt && s.state.startedAt !== startedAt.value) startedAt.value = s.state.startedAt;
   if (s.state?.startedAt && s.state?.endedAt) startedAt.value = 0;
   if (s.state?.minutes) stateMinutes.value = s.state.minutes;
-  if (view.value === "solution") {
+  if (view.value !== "canvas") {
     if (s.solutionMtime && knownSolutionMtime && s.solutionMtime > knownSolutionMtime + 50) { knownSolutionMtime = s.solutionMtime; await loadCanvas("solution"); toast.add({ title: "Solution updated", icon: "i-lucide-refresh-cw" }); }
     else if (s.solutionMtime && !knownSolutionMtime) knownSolutionMtime = s.solutionMtime;
     return;
@@ -62,7 +63,7 @@ async function overwriteDisk() {
   externalChange.value = false; knownMtime = null;
   await onCanvasChange(sc);
 }
-async function switchView(v: "canvas" | "solution") { if (v === view.value) return; await loadCanvas(v); view.value = v; }
+async function switchView(v: View) { if (v === view.value) return; await loadCanvas(v); view.value = v; }
 
 // ---- side panel -----------------------------------------------------------
 const tab = ref("prompt");
@@ -123,11 +124,13 @@ useHead({ title: () => `${session.value?.title ?? "Session"} · sysdesign-prep` 
       </div>
       <UFieldGroup v-if="!narrow" size="xs" class="ml-4">
         <UButton :variant="view === 'canvas' ? 'solid' : 'subtle'" color="neutral" icon="i-lucide-pen-line" @click="switchView('canvas')">My canvas</UButton>
-        <UButton :variant="view === 'solution' ? 'solid' : 'subtle'" color="neutral" icon="i-lucide-lightbulb" :disabled="!session.hasSolution" @click="switchView('solution')">Solution</UButton>
+        <UButton :variant="view === 'solution45' ? 'solid' : 'subtle'" color="neutral" icon="i-lucide-timer" :disabled="!session.hasSolution45" @click="switchView('solution45')">45-min answer</UButton>
+        <UButton :variant="view === 'solution' ? 'solid' : 'subtle'" color="neutral" icon="i-lucide-lightbulb" :disabled="!session.hasSolution" @click="switchView('solution')">Full reference</UButton>
       </UFieldGroup>
       <div class="ml-auto flex items-center gap-2">
         <span class="text-[11px] text-muted hidden lg:inline">
-          <template v-if="view === 'solution'">read-only reference</template>
+          <template v-if="view === 'solution'">read-only · full reference (for study, not the 45-min bar)</template>
+          <template v-else-if="view === 'solution45'">read-only · what a strong 45-minute answer looks like</template>
           <template v-else-if="saveState === 'saving'">saving…</template>
           <template v-else-if="saveState === 'error'" class="text-error">save failed</template>
           <template v-else-if="savedAt">saved · canvas.excalidraw</template>
@@ -148,6 +151,7 @@ useHead({ title: () => `${session.value?.title ?? "Session"} · sysdesign-prep` 
       <UTabs v-model="pane" :items="paneItems" size="xs" :content="false" class="flex-1" />
       <UFieldGroup v-if="session.hasSolution" size="xs">
         <UButton :variant="view === 'canvas' ? 'solid' : 'subtle'" color="neutral" icon="i-lucide-pen-line" @click="switchView('canvas')" />
+        <UButton v-if="session.hasSolution45" :variant="view === 'solution45' ? 'solid' : 'subtle'" color="neutral" icon="i-lucide-timer" @click="switchView('solution45')" />
         <UButton :variant="view === 'solution' ? 'solid' : 'subtle'" color="neutral" icon="i-lucide-lightbulb" @click="switchView('solution')" />
       </UFieldGroup>
     </div>
@@ -170,7 +174,7 @@ useHead({ title: () => `${session.value?.title ?? "Session"} · sysdesign-prep` 
       <!-- canvas -->
       <section v-show="canvasVisible" class="flex-1 min-w-0 relative bg-white dark:bg-neutral-900">
         <ClientOnly>
-          <ExcalidrawCanvas ref="canvas" :read-only="view === 'solution'" :theme="canvasTheme" @change="onCanvasChange" @ready="loadCanvas(view)" />
+          <ExcalidrawCanvas ref="canvas" :read-only="view !== 'canvas'" :theme="canvasTheme" @change="onCanvasChange" @ready="loadCanvas(view)" />
           <template #fallback><div class="absolute inset-0 grid place-items-center text-sm text-muted">Loading canvas…</div></template>
         </ClientOnly>
       </section>

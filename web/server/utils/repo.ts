@@ -31,7 +31,7 @@ const SESSION_RE = /^(\d{4}-\d{2}-\d{2})-([a-z0-9]+)-(.+)$/;
 export interface SessionSummary {
   id: string; date: string; company: string; topic: string; title: string;
   mode?: string; minutes?: number;
-  hasCanvas: boolean; hasFeedback: boolean; hasSolution: boolean; hasTranscript: boolean;
+  hasCanvas: boolean; hasFeedback: boolean; hasSolution: boolean; hasSolution45: boolean; hasTranscript: boolean;
   overall?: number;
 }
 
@@ -62,6 +62,7 @@ export async function listSessions(): Promise<SessionSummary[]> {
       hasCanvas: await exists("sessions", id, "canvas.excalidraw"),
       hasFeedback: await exists("sessions", id, "feedback.md"),
       hasSolution: await exists("sessions", id, "solution.excalidraw"),
+      hasSolution45: await exists("sessions", id, "solution-45min.excalidraw"),
       hasTranscript: await exists("sessions", id, "transcript.md"),
       overall,
     });
