@@ -8,6 +8,7 @@ System design interview practice for any coding agent that supports [Agent Skill
 - `scripts/excalidraw.mjs` — spec JSON → `.excalidraw` (layered auto-layout, coloured by `kind`); schema in the file header.
 - `scripts/read-excalidraw.mjs` — `.excalidraw` → markdown summary of boxes/arrows/labels (`--json` for raw). This is how the agent "sees" a diagram.
 - `scripts/to-clipboard.mjs` — copies a `.excalidraw` to the clipboard so Cmd+V pastes it into excalidraw.com (macOS `pbcopy`).
+- `scripts/session.mjs` — `start|elapsed|stop <session>` shared interview clock (`<session>/state.json`); the workbench timer follows it.
 - `scripts/voice.mjs` — `speak "<text>"` / `listen` / `status` / `log` CLI used by `/mock --voice`; targets the workbench's `/api/voice/*` when it's running, else `serve` runs a zero-dep fallback page.
 - `web/` — Nuxt 4 + Nuxt UI workbench (`bun run web`, http://localhost:7788): dashboard, companies, session workspace with Excalidraw embedded natively and **autosaving to `sessions/<id>/canvas.excalidraw`**, notes editor, feedback/solution tabs, timer, voice panel. The agent never calls the workbench except via `scripts/voice.mjs`; it reads/writes the same files.
 - `rubric/rubric.md` — 10-dimension senior/staff rubric + diagram checks; all grading references it.

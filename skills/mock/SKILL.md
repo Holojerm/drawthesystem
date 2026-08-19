@@ -10,7 +10,7 @@ You are the interviewer. Stay in role until the debrief.
 
 ## Setup
 1. Resolve session dir (arg, or the most recent one in `sessions/` without a `feedback.md`). Read `prompt.md`, `interviewer.md`, `rubric/rubric.md`, and the last 3 rows of `progress.md`.
-2. Note the start time. Time budget from `prompt.md` (default 45 min). Checkpoints: ~5 min requirements · ~5 min estimates/API · ~15 min high-level · ~15 min deep dive · ~5 min wrap.
+2. Start the shared clock: `bun scripts/session.mjs start <session> --minutes N` (N from `prompt.md`, default 45). The workbench timer follows it. Check time with `bun scripts/session.mjs elapsed <session>` (exit 3 = over time). Checkpoints: ~5 min requirements · ~5 min estimates/API · ~15 min high-level · ~15 min deep dive · ~5 min wrap.
 3. **Voice mode** (`--voice`, or the user asks to talk): the user needs the workbench open on this session (`bun run web` → `http://localhost:7788/sessions/<dir>` → *Talk* panel → *Start mic*), or the no-dependency fallback `bun scripts/voice.mjs serve`. Confirm with `bun scripts/voice.mjs status` → `browserAttached: true`. From then on, every interviewer turn is delivered with `bun scripts/voice.mjs speak "<text>"` (also print it) and every candidate turn is fetched with `bun scripts/voice.mjs listen --max 90`. If `listen` exits 3 (silence), the candidate is probably drawing — either wait again or gently prompt ("Talk me through what you're drawing"). The user can still type at any time; treat typed and spoken input the same.
 4. Open by presenting the prompt conversationally (2–3 sentences, not the whole file) and inviting clarifying questions.
 
@@ -21,7 +21,8 @@ You are the interviewer. Stay in role until the debrief.
 - **Reading the canvas:** when the user says "look at the diagram" / "canvas" / pastes a path, run `bun scripts/read-excalidraw.mjs <session>/canvas.excalidraw` and respond to what's *actually there* (missing arrows, unlabelled boxes, no write path…). The workbench autosaves, so the file is always current; if they're on excalidraw.com and it looks unchanged, remind them to *Save to…* that path.
 - **Drive the deep dive.** Target from `interviewer.md` unless the candidate picks a good one. Escalate: happy path → failure → 10× scale → consistency edge case → cost/ops.
 - Keep turns short (interviewers talk ~20% of the time). One question at a time. In voice mode, keep spoken turns ≤ 3 sentences.
-- `pause` stops the clock; `resume` restarts; `end` or time expiry → debrief.
+- If the candidate asks you to draw for them, do it *verbatim* — only what they said, no additions — via a spec + `bun scripts/excalidraw.mjs … <session>/canvas.excalidraw` (the workbench picks it up automatically), and note it in feedback under Communication & drive.
+- `pause` stops the clock; `resume` restarts; `end` or time expiry → `bun scripts/session.mjs stop <session>` and debrief.
 
 ## Debrief — write `<session>/feedback.md`, then print it
 ```
@@ -39,6 +40,6 @@ Elapsed: N min · Mode: text|voice
 ## The crux — did they find it? What was it?
 ## Next-session focus — one dimension + one concrete drill
 ```
-In voice mode, also copy the transcript: `bun scripts/voice.mjs log > <session>/transcript.md`.
+Transcript: voice mode → `bun scripts/voice.mjs log > <session>/transcript.md`; text mode → write a condensed `<session>/transcript.md` yourself (each turn as `**Interviewer:** …` / `**Candidate:** …`, trimmed but faithful) so the session survives outside your context.
 Append to `progress.md`: `| <date> | <company> | <topic> | mock | <overall> | <weakest dim> | <session-dir> |`
 Offer `/solution` for the reference architecture.

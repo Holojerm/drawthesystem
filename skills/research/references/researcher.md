@@ -14,6 +14,8 @@ Goal: a `profile.md` that lets another agent invent a realistic, company-flavour
 4. **Interview intel** — `<company> system design interview questions`; Glassdoor / Blind / levels.fyi / interviewing.io / hellointerview. Note the *format* (45 vs 60 min, whiteboard tool, breadth vs depth) and *actually-asked* prompts.
 5. **Domain constraints** — regulatory (PCI, HIPAA, GDPR), real-time vs batch, global vs regional, consistency needs, peak events.
 
+Write a first draft of `profile.md` as soon as you have the product surface and one scale/stack source (after ~5 fetches), then keep refining it in place — a long research run can be interrupted, and a thin profile beats none.
+
 ## Output: `profile.md` with exactly these sections
 ```
 # <Company> — System Design Prep Profile

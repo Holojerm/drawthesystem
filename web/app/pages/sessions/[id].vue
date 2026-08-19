@@ -15,10 +15,11 @@ const canvas = ref<{ load: (s: Scene) => Promise<void>; getScene?: () => any } |
 const saveState = ref<"saved" | "saving" | "dirty" | "error">("saved");
 const savedAt = ref<number | null>(null);
 let knownMtime: number | null = null;
+let knownSolutionMtime: number | null = null;
 
 async function loadCanvas(which: "canvas" | "solution" = "canvas") {
   const s = await $fetch<Scene>(`/api/sessions/${id.value}/canvas`, { query: { which } });
-  if (which === "canvas") knownMtime = s.mtime ?? null;
+  if (which === "canvas") knownMtime = s.mtime ?? null; else knownSolutionMtime = s.mtime ?? null;
   await canvas.value?.load(s);
 }
 
@@ -38,9 +39,19 @@ async function onCanvasChange(sc: { elements: any[]; appState: any; files: any }
 // reload silently when this tab has no unsaved edits, otherwise offer reload / overwrite.
 const externalChange = ref(false);
 useIntervalFn(async () => {
-  if (view.value !== "canvas" || saveState.value === "saving") return;
-  const s = await $fetch(`/api/sessions/${id.value}`).catch(() => null);
-  if (s && s.canvasMtime && knownMtime && s.canvasMtime > knownMtime + 50) {
+  const s = await $fetch<any>(`/api/sessions/${id.value}`).catch(() => null);
+  if (!s) return;
+  // agent-driven clock (bun scripts/session.mjs start) wins over the local one
+  if (s.state?.startedAt && s.state.startedAt !== startedAt.value) startedAt.value = s.state.startedAt;
+  if (s.state?.startedAt && s.state?.endedAt) startedAt.value = 0;
+  if (s.state?.minutes) stateMinutes.value = s.state.minutes;
+  if (view.value === "solution") {
+    if (s.solutionMtime && knownSolutionMtime && s.solutionMtime > knownSolutionMtime + 50) { knownSolutionMtime = s.solutionMtime; await loadCanvas("solution"); toast.add({ title: "Solution updated", icon: "i-lucide-refresh-cw" }); }
+    else if (s.solutionMtime && !knownSolutionMtime) knownSolutionMtime = s.solutionMtime;
+    return;
+  }
+  if (saveState.value === "saving") return;
+  if (s.canvasMtime && knownMtime && s.canvasMtime > knownMtime + 50) {
     if (saveState.value === "saved") { await loadCanvas("canvas"); toast.add({ title: "Canvas updated from disk", icon: "i-lucide-refresh-cw" }); }
     else externalChange.value = true;
   }
@@ -72,7 +83,8 @@ async function saveNotes() {
 }
 
 // ---- timer ----------------------------------------------------------------
-const minutes = computed(() => session.value?.minutes ?? 45);
+const stateMinutes = ref<number | null>(null);
+const minutes = computed(() => stateMinutes.value ?? session.value?.minutes ?? 45);
 const startedAt = useLocalStorage<number>(`sdp.timer.${id.value}`, 0);
 const now = ref(Date.now());
 useIntervalFn(() => (now.value = Date.now()), 1000);

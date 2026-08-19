@@ -12,12 +12,12 @@ Produce the "model answer" after the user has attempted the scenario. **Refuse (
 1. Read `prompt.md`, `interviewer.md`, `feedback.md`, `rubric/rubric.md`, and the company profile.
 2. Design the reference architecture yourself. Aim for what a strong staff candidate would draw in 45 minutes: **minimal, justified, labelled, with numbers** — not an everything-diagram. 8–15 nodes typical.
 3. Write `<session>/solution-spec.json` in the spec format documented at the top of `scripts/excalidraw.mjs`:
-   - `layer` 0 = clients, then edge (CDN/LB/gateway), then services, then storage/queues, then async consumers/analytics.
+   - `layer` = column left→right (clients → edge → services → storage/queues → async consumers → analytics). Pin `row` to build clean bands (e.g. row 0 control plane, row 1 real-time flow, row 2 its stores, row 3 customer/query). Keep most edges between adjacent columns; for the few long or backward ones set `via: "top"|"bottom"` so they take a lane around the diagram. Don't draw every "writes to DB" arrow — annotate the store's label instead and keep the diagram about flow.
    - `kind` per node so colours carry meaning; use `note` on storage nodes for partition key / replication / TTL.
    - Edge labels: verb + protocol or payload; `style: "dashed"` for async.
    - `groups` for service boundaries or regions when they clarify.
    - `notes` block: key numbers, consistency choices, and the crux in one line each (≤ 6 bullets).
-4. Run `bun scripts/excalidraw.mjs <session>/solution-spec.json <session>/solution.excalidraw`, then `bun scripts/read-excalidraw.mjs <session>/solution.excalidraw` and confirm the summary matches your intent (no dangling arrows, every node labelled). Fix the spec and regenerate if not.
+4. Run `bun scripts/excalidraw.mjs <session>/solution-spec.json <session>/solution.excalidraw`, then `bun scripts/read-excalidraw.mjs <session>/solution.excalidraw` and confirm the summary matches your intent (no dangling arrows, every node labelled, groups contain only their members). Fix the spec and regenerate if not — the workbench *Solution* view refreshes on its own.
 5. Write `<session>/solution.md`:
 ```
 # Reference solution — <title>
