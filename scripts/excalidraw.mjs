@@ -26,6 +26,10 @@
  * vertically in the order given (group members first when `groups` exist, so a
  * group's frame is a clean band — keep each group's members in adjacent layers
  * and at most one per column where possible). Override with explicit `x`,`y`.
+ * `row` (optional) pins a node to a grid row within its layer (0 = top) — use it to
+ * build clean bands (e.g. row 0 control plane, row 1 real-time, row 2 pipeline).
+ * Edges are routed orthogonally with distributed ports; `via: "top"|"bottom"` forces
+ * a lane route around the diagram for a long/backward edge.
  * `kind` picks a colour: client | service | db | cache | queue | storage |
  * external | lb | cdn | note (default: service).
  */
@@ -117,43 +121,128 @@ function rectWithLabel(x, y, w, h, label, style, extra = {}) {
 
 function center(n) { return { cx: n.x + n.width / 2, cy: n.y + n.height / 2 }; }
 
-// Point on the border of rect r along the ray from its centre toward (tx,ty)
-function borderPoint(r, tx, ty) {
-  const { cx, cy } = center(r);
-  const dx = tx - cx, dy = ty - cy;
-  if (dx === 0 && dy === 0) return { x: cx, y: cy };
-  const hw = r.width / 2, hh = r.height / 2;
-  const sx = Math.abs(dx) > 0 ? hw / Math.abs(dx) : Infinity;
-  const sy = Math.abs(dy) > 0 ? hh / Math.abs(dy) : Infinity;
-  const s = Math.min(sx, sy);
-  return { x: cx + dx * s, y: cy + dy * s };
+// ---------------------------------------------------------------- routing ----
+// Orthogonal (elbow) routing. Each edge becomes a polyline of horizontal and
+// vertical segments. Ports on a node side are spread out so parallel edges do
+// not overlap. Segments that would cross a node are re-routed through a lane
+// above or below the diagram.
+const segHitsRect = (p, q, r, pad = 6) => {
+  const x1 = Math.min(p.x, q.x) - pad, x2 = Math.max(p.x, q.x) + pad, y1 = Math.min(p.y, q.y) - pad, y2 = Math.max(p.y, q.y) + pad;
+  return x1 < r.x + r.width && x2 > r.x && y1 < r.y + r.height && y2 > r.y;
+};
+const pathHits = (pts, rects) => pts.some((p, i) => i > 0 && rects.some(r => segHitsRect(pts[i - 1], p, r)));
+
+// Assign ports: for every (node, side) collect edges, then spread along the side.
+function assignPorts(edges, byId) {
+  const buckets = new Map(); // key node.id|side -> [{edge, end:'a'|'b', order}]
+  const push = (id, side, e, end, order) => { const k = id + "|" + side; if (!buckets.has(k)) buckets.set(k, []); buckets.get(k).push({ e, end, order }); };
+  for (const e of edges) {
+    const a = byId.get(e.from), b = byId.get(e.to);
+    const ac = center(a), bc = center(b);
+    const dx = bc.cx - ac.cx, dy = bc.cy - ac.cy;
+    const sameCol = Math.abs(dx) < a.width;      // stacked vertically
+    let sa, sb;
+    if (e.via === "top") { sa = "top"; sb = "top"; }
+    else if (e.via === "bottom") { sa = "bottom"; sb = "bottom"; }
+    else if (sameCol) { sa = dy > 0 ? "bottom" : "top"; sb = dy > 0 ? "top" : "bottom"; }
+    else if (dx > 0) { sa = "right"; sb = "left"; }
+    else { sa = "left"; sb = "right"; }
+    e._sa = sa; e._sb = sb;
+    // order along the side: by the other endpoint's perpendicular coordinate
+    push(e.from, sa, e, "a", (sa === "left" || sa === "right") ? bc.cy : bc.cx);
+    push(e.to, sb, e, "b", (sb === "left" || sb === "right") ? ac.cy : ac.cx);
+  }
+  for (const [k, list] of buckets) {
+    const [id, side] = k.split("|"); const n = byId.get(id);
+    list.sort((u, v) => u.order - v.order);
+    list.forEach((item, i) => {
+      const t = (i + 1) / (list.length + 1);           // 0..1 along the side
+      let pt;
+      if (side === "right") pt = { x: n.x + n.width, y: n.y + n.height * t };
+      else if (side === "left") pt = { x: n.x, y: n.y + n.height * t };
+      else if (side === "bottom") pt = { x: n.x + n.width * t, y: n.y + n.height };
+      else pt = { x: n.x + n.width * t, y: n.y };
+      item.e[item.end === "a" ? "_pa" : "_pb"] = pt;
+    });
+  }
 }
 
-function arrowBetween(a, b, label, style = "solid") {
-  const bc = center(b), ac = center(a);
-  const p1 = borderPoint(a, bc.cx, bc.cy);
-  const p2 = borderPoint(b, ac.cx, ac.cy);
-  const dx = p2.x - p1.x, dy = p2.y - p1.y;
-  const arrow = base("arrow", p1.x, p1.y, Math.abs(dx), Math.abs(dy), {
-    points: [[0, 0], [dx, dy]],
+function routeEdge(e, a, b, rects, bounds) {
+  const p = e._pa, q = e._pb, sa = e._sa, sb = e._sb;
+  const others = rects.filter(r => r !== a && r !== b);
+  const candidates = [];
+  if (sa === "right" && sb === "left") {
+    const gapA = a.x + a.width + COL_GAP / 2, gapB = b.x - COL_GAP / 2;
+    if (Math.abs(p.y - q.y) < 20) candidates.push([p, q]);               // near-level: a tiny jog looks worse than a slight slope
+    candidates.push([p, { x: gapA, y: p.y }, { x: gapA, y: q.y }, q]);   // turn early
+    candidates.push([p, { x: gapB, y: p.y }, { x: gapB, y: q.y }, q]);   // turn late
+  } else if (sa === "left" && sb === "right") {                            // backward
+    const gapA = a.x - COL_GAP / 2, gapB = b.x + b.width + COL_GAP / 2;
+    candidates.push([p, { x: gapA, y: p.y }, { x: gapA, y: q.y }, q]);
+    candidates.push([p, { x: gapB, y: p.y }, { x: gapB, y: q.y }, q]);
+  } else if ((sa === "bottom" && sb === "top") || (sa === "top" && sb === "bottom")) {
+    if (Math.abs(p.x - q.x) < 20) candidates.push([p, q]);
+    const midY = (p.y + q.y) / 2;
+    candidates.push([p, { x: p.x, y: midY }, { x: q.x, y: midY }, q]);
+  }
+  for (const c of candidates) if (!pathHits(c, others)) return c;
+  // Lane routing: leave the grid via a horizontal lane above or below it. Try
+  // several ways of getting from the node to the lane (straight up/down, or out
+  // the side into the column gap first) and pick the first collision-free one.
+  // Lanes are staggered so parallel lane edges don't overlap.
+  const laneIdx = e._lane ?? 0;
+  const laneTop = bounds.top - 40 - laneIdx * 26, laneBot = bounds.bottom + 40 + laneIdx * 26;
+  const preferTop = e.via === "top" || (e.via !== "bottom" && center(a).cy < (bounds.top + bounds.bottom) / 2);
+  const gapL = r => r.x - COL_GAP / 2, gapR = r => r.x + r.width + COL_GAP / 2;
+  const exits = (r, top) => [
+    [{ x: r.x + r.width / 2, y: top ? r.y : r.y + r.height }],                                                    // straight out
+    [{ x: r.x + r.width, y: r.y + r.height * 0.5 }, { x: gapR(r), y: r.y + r.height * 0.5 }],                    // out the right into the gap
+    [{ x: r.x, y: r.y + r.height * 0.5 }, { x: gapL(r), y: r.y + r.height * 0.5 }],                              // out the left into the gap
+  ];
+  const entries = (r, top) => [
+    [{ x: r.x + r.width / 2, y: top ? r.y : r.y + r.height }],                                                    // straight in
+    [{ x: gapL(r), y: r.y + r.height * 0.5 }, { x: r.x, y: r.y + r.height * 0.5 }],                              // in from the left gap
+    [{ x: gapR(r), y: r.y + r.height * 0.5 }, { x: r.x + r.width, y: r.y + r.height * 0.5 }],                    // in from the right gap
+  ];
+  const attempts = [];
+  for (const top of [preferTop, !preferTop]) {
+    const laneY = top ? laneTop : laneBot;
+    for (const ex of exits(a, top)) for (const en of entries(b, top)) {
+      const last = ex[ex.length - 1], first = en[0];
+      attempts.push([...ex, { x: last.x, y: laneY }, { x: first.x, y: laneY }, ...en]);
+    }
+  }
+  for (const c of attempts) if (!pathHits(c, others)) return c;
+  return candidates[0] ?? attempts[0];
+}
+
+function arrowFromPath(pts, a, b, label, style = "solid") {
+  const x0 = pts[0].x, y0 = pts[0].y;
+  const rel = pts.map(p => [p.x - x0, p.y - y0]);
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const arrow = base("arrow", x0, y0, Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys), {
+    points: rel,
     lastCommittedPoint: null,
-    startBinding: { elementId: a.id, focus: 0, gap: 4 },
-    endBinding: { elementId: b.id, focus: 0, gap: 4 },
+    startBinding: { elementId: a.id, focus: 0, gap: 2 },
+    endBinding: { elementId: b.id, focus: 0, gap: 2 },
     startArrowhead: null,
     endArrowhead: "arrow",
     strokeStyle: style === "dashed" ? "dashed" : style === "dotted" ? "dotted" : "solid",
+    roundness: null,
     elbowed: false,
   });
   a.boundElements.push({ id: arrow.id, type: "arrow" });
   b.boundElements.push({ id: arrow.id, type: "arrow" });
   const out = [arrow];
   if (label) {
-    const fontSize = 14;
-    const tw = label.length * fontSize * 0.6 + 8, th = fontSize * 1.25;
-    const t = textEl(label, p1.x + dx / 2 - tw / 2, p1.y + dy / 2 - th / 2, tw, th, {
-      containerId: arrow.id, fontSize,
-    });
-    arrow.boundElements.push({ id: t.id, type: "text" });
+    // label sits on the longest segment
+    let best = 0, bi = 1;
+    for (let i = 1; i < pts.length; i++) { const L = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); if (L > best) { best = L; bi = i; } }
+    const mx = (pts[bi].x + pts[bi - 1].x) / 2, my = (pts[bi].y + pts[bi - 1].y) / 2;
+    const fontSize = 13, tw = label.length * fontSize * 0.58 + 10, th = fontSize * 1.25 + 4;
+    const vertical = Math.abs(pts[bi].x - pts[bi - 1].x) < 2;
+    const t = textEl(label, vertical ? mx + 6 : mx - tw / 2, vertical ? my - th / 2 : my - th - 2, tw, th, { fontSize, align: vertical ? "left" : "center" });
+    t.backgroundColor = "#ffffff"; // legibility over lines (Excalidraw ignores bg on text; harmless)
     out.push(t);
   }
   return out;
@@ -166,7 +255,7 @@ export function buildExcalidraw(spec) {
 
   if (spec.title) {
     elements.push(textEl(spec.title, MARGIN, yTop, null, null, { fontSize: 28, align: "left" }));
-    yTop += 70;
+    yTop += 70 + (spec.edges?.some(e => e.via === "top") ? 60 : 0);
   }
 
   // Layout by layer
@@ -187,15 +276,21 @@ export function buildExcalidraw(spec) {
   (spec.groups ?? []).forEach((g, gi) => (g.nodes ?? []).forEach(id => { if (!groupRank.has(id)) groupRank.set(id, gi); }));
   const hasGroups = groupRank.size > 0;
 
+  // Node width adapts to the longest label line; column width to its widest node.
+  const widthOf = n => n.width ?? Math.min(360, Math.max(NODE_W, Math.max(...String(n.label ?? n.id).split("\n").map(l => l.length)) * 16 * 0.62 + 28));
+  const colX = new Map(); let runX = MARGIN;
+  for (const l of layerKeys) { colX.set(l, runX); runX += Math.max(...layers.get(l).map(widthOf)) + COL_GAP; }
+
   for (const l of layerKeys) {
     const col = layers.get(l);
     if (hasGroups) col.sort((a, b) => (groupRank.get(a.id) ?? 1e9) - (groupRank.get(b.id) ?? 1e9));
     const colH = col.length * NODE_H + (col.length - 1) * ROW_GAP;
     const yStart = hasGroups ? yTop : yTop + (totalH - colH) / 2;
+    const colW = Math.max(...col.map(widthOf));
     col.forEach((n, i) => {
-      const x = n.x ?? MARGIN + layerKeys.indexOf(l) * (NODE_W + COL_GAP);
-      const y = n.y ?? yStart + i * (NODE_H + ROW_GAP);
-      const w = n.width ?? NODE_W, h = n.height ?? NODE_H;
+      const w = widthOf(n), h = n.height ?? NODE_H;
+      const x = n.x ?? colX.get(l) + (colW - w) / 2;   // centre within the column
+      const y = n.y ?? (n.row != null ? yTop + n.row * (NODE_H + ROW_GAP) : yStart + i * (NODE_H + ROW_GAP));
       const style = KIND_STYLE[n.kind ?? "service"] ?? KIND_STYLE.service;
       const [rect, t] = rectWithLabel(x, y, w, h, n.label ?? n.id, style);
       byId.set(n.id, rect);
@@ -206,10 +301,27 @@ export function buildExcalidraw(spec) {
     });
   }
 
-  for (const e of spec.edges ?? []) {
+  const edges = (spec.edges ?? []).filter(e => {
+    if (byId.has(e.from) && byId.has(e.to)) return true;
+    console.error(`edge references unknown node: ${e.from} -> ${e.to}`); return false;
+  }).map(e => ({ ...e }));
+  const rects = [...byId.values()];
+  const bounds = { top: Math.min(...rects.map(r => r.y)), bottom: Math.max(...rects.map(r => r.y + r.height)) };
+  assignPorts(edges, byId);
+  // Stagger lane edges (explicit `via`, or backward edges) so they don't share a y.
+  const laneCounters = { top: 0, bottom: 0 };
+  for (const e of edges) {
     const a = byId.get(e.from), b = byId.get(e.to);
-    if (!a || !b) { console.error(`edge references unknown node: ${e.from} -> ${e.to}`); continue; }
-    elements.push(...arrowBetween(a, b, e.label, e.style));
+    const backward = center(b).cx < center(a).cx - a.width / 2;
+    if (e.via || backward) {
+      const side = e.via ?? (center(a).cy < (bounds.top + bounds.bottom) / 2 ? "top" : "bottom");
+      e._lane = laneCounters[side]++;
+    }
+  }
+  for (const e of edges) {
+    const a = byId.get(e.from), b = byId.get(e.to);
+    const pts = routeEdge(e, a, b, rects, bounds);
+    elements.push(...arrowFromPath(pts, a, b, e.label, e.style));
   }
 
   // Groups: a dashed rectangle around member nodes, drawn behind them
@@ -232,9 +344,11 @@ export function buildExcalidraw(spec) {
 
   // Free-floating notes bottom-left
   if (spec.notes?.length) {
-    const y = yTop + totalH + 80;
+    const rowsUsed = Math.max(maxRows, ...(spec.nodes ?? []).map(n => (n.row ?? 0) + 1));
+    const y = yTop + rowsUsed * (NODE_H + ROW_GAP) + 120;
     const text = spec.notes.map(n => "• " + n).join("\n");
-    const [rect, t] = rectWithLabel(MARGIN, y, 520, 30 + spec.notes.length * 22, text, KIND_STYLE.note);
+    const nw = Math.min(1400, Math.max(520, Math.max(...spec.notes.map(n => n.length)) * 16 * 0.55 + 60));
+    const [rect, t] = rectWithLabel(MARGIN, y, nw, 30 + spec.notes.length * 22, text, KIND_STYLE.note);
     t.textAlign = "left";
     elements.push(rect, t);
   }
