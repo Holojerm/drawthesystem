@@ -21,7 +21,8 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "web"
+    "web",
+    "core"
   ],
   "engines": {
     "bun": ">=1.2"

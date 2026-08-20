@@ -1,0 +1,26 @@
+{
+  "name": "@sysdesign/core",
+  "version": "0.1.0",
+  "description": "Shared core for sysdesign-prep and sysdesign-cloud: excalidraw spec generator/reader plus live-imported skill and rubric content.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./excalidraw": {
+      "types": "./types/excalidraw.d.ts",
+      "default": "./src/excalidraw.mjs"
+    },
+    "./read-excalidraw": {
+      "types": "./types/read-excalidraw.d.ts",
+      "default": "./src/read-excalidraw.mjs"
+    }
+  }
+}

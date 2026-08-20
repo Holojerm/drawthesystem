@@ -5,8 +5,9 @@ System design interview practice for any coding agent that supports [Agent Skill
 ## Layout
 - `skills/<name>/SKILL.md` — `/research`, `/scenario`, `/mock`, `/critique`, `/solution`, `/progress`. Each SKILL.md is the source of truth for that flow. `.claude/skills` and `.agents/skills` are symlinks to `skills/` for auto-discovery.
 - `skills/research/references/researcher.md` — the research playbook (`/research` may delegate it to a subagent if the host supports one).
-- `scripts/excalidraw.mjs` — spec JSON → `.excalidraw` (layered auto-layout, coloured by `kind`); schema in the file header.
-- `scripts/read-excalidraw.mjs` — `.excalidraw` → markdown summary of boxes/arrows/labels (`--json` for raw). This is how the agent "sees" a diagram.
+- `core/` — `@sysdesign/core` workspace package: the excalidraw generator/reader as importable, zero-dep ESM functions; consumed live (path dependency) by the cloud product, so changes here flow downstream automatically.
+- `scripts/excalidraw.mjs` — spec JSON → `.excalidraw` (layered auto-layout, coloured by `kind`); schema in the file header. Thin CLI over `core/src/excalidraw.mjs`.
+- `scripts/read-excalidraw.mjs` — `.excalidraw` → markdown summary of boxes/arrows/labels (`--json` for raw). This is how the agent "sees" a diagram. Thin CLI over `core/src/read-excalidraw.mjs`.
 - `scripts/to-clipboard.mjs` — copies a `.excalidraw` to the clipboard so Cmd+V pastes it into excalidraw.com (macOS `pbcopy`).
 - `scripts/session.mjs` — `start|elapsed|pause|resume|stop <session>` shared interview clock (`<session>/state.json`); the workbench timer follows it (shows ⏸ while paused).
 - `scripts/voice.mjs` — `speak "<text>"` / `listen` / `status` / `log` CLI used by `/mock --voice`; targets the workbench's `/api/voice/*` when it's running, else `serve` runs a zero-dep fallback page.
@@ -21,6 +22,6 @@ System design interview practice for any coding agent that supports [Agent Skill
 - Diagram round-trip: the user draws in the workbench (autosave) or at excalidraw.com (*Save to…*); either way the agent reads `<session>/canvas.excalidraw` from disk only.
 - Web research: use whatever search/fetch tools the host provides (load them first if the host defers tools); if none, ask the user for URLs or pasted text.
 - Batch runs (many `/research` + `/scenario` in parallel subagents) take an hour or more: on macOS run `caffeinate -dis` first — idle sleep kills in-flight agents — and have each agent write its profile draft early so an interrupted run still leaves output.
-- Bun ≥ 1.2 (`scripts/` also run under Node ≥ 20). `scripts/` and `skills/` are zero-dependency; only `web/` has a `node_modules`. Scripts are invoked relative to the repo root.
+- Bun ≥ 1.2 (`scripts/` also run under Node ≥ 20). `scripts/`, `core/`, and `skills/` are zero-dependency; only `web/` has a `node_modules`. Scripts are invoked relative to the repo root and import `core/` by relative path, so a fresh clone runs them with no install.
 - Session dir names are `YYYY-MM-DD-<slug>-<topic>` (the workbench parses this); `prompt.md` starts with `# Title` and a `_Company: … · Mode: breadth|depth · Time: N min …_` line.
 - Grade to the senior/staff bar unless the scenario says otherwise — depth of justification and finding the crux unled, not breadth of drawing. `/solution` produces both `solution.excalidraw` (full map, for study) and `solution-45min.excalidraw` (what a strong candidate actually draws in the room).
