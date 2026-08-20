@@ -7,9 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
       - uses: oven-sh/setup-bun@v2
         with: { bun-version: latest }
       - run: bun install --frozen-lockfile
       - run: bun run check
+      # scripts/ and core/ promise to run under plain Node >= 20 with no install
+      - run: node scripts/excalidraw.mjs examples/sample-spec.json /tmp/sdp-node.excalidraw && node scripts/read-excalidraw.mjs /tmp/sdp-node.excalidraw --json > /dev/null
       - run: bun run typecheck
       - run: bun run web:build

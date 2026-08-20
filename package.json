@@ -34,6 +34,6 @@
     "typecheck": "bun run --cwd web typecheck",
     "voice": "bun scripts/voice.mjs serve",
     "demo": "bun scripts/demo.mjs",
-    "check": "bun scripts/excalidraw.mjs examples/sample-spec.json /tmp/sdp-check.excalidraw && bun scripts/read-excalidraw.mjs /tmp/sdp-check.excalidraw > /dev/null && echo scripts ok"
+    "check": "bun scripts/excalidraw.mjs examples/sample-spec.json /tmp/sdp-check.excalidraw && bun scripts/read-excalidraw.mjs /tmp/sdp-check.excalidraw > /dev/null && node --input-type=module -e \"const c = (await import('./core/content/node.mjs')).loadContent(); if (c.skills.length < 6) throw new Error('missing skills'); console.log('content ok (' + c.skills.length + ' skills, ' + c.rubric.dimensions.length + ' rubric dimensions)')\" && echo scripts ok"
   }
 }
