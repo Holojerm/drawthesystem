@@ -11,13 +11,13 @@ const links = computed(() => [
   <div class="min-h-screen flex flex-col bg-default text-default">
     <header class="h-12 shrink-0 border-b border-default flex items-center gap-4 px-4 bg-default/80 backdrop-blur sticky top-0 z-40">
       <NuxtLink to="/" class="flex items-center gap-2 font-semibold tracking-tight">
-        <span class="text-lg">🧭</span><span>sysdesign-prep</span>
+        <span class="text-lg">🧭</span><span>Draw the System</span>
       </NuxtLink>
       <UNavigationMenu :items="links" class="hidden sm:flex" />
       <div class="ml-auto flex items-center gap-2">
         <slot name="header-right" />
         <ThemeToggle />
-        <UButton to="https://github.com/jeremyettlinger/sysdesign-prep" target="_blank" icon="i-simple-icons-github" color="neutral" variant="ghost" size="sm" aria-label="GitHub" />
+        <UButton to="https://github.com/Holojerm/drawthesystem" target="_blank" icon="i-simple-icons-github" color="neutral" variant="ghost" size="sm" aria-label="GitHub" />
       </div>
     </header>
     <main class="flex-1 min-h-0 flex flex-col">

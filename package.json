@@ -1,5 +1,5 @@
 {
-  "name": "sysdesign-prep",
+  "name": "drawthesystem",
   "version": "0.1.0",
   "description": "System design interview practice with any AI coding agent + Excalidraw. Skills for research, scenarios, mock interviews (text/voice), diagram critique, reference solutions.",
   "keywords": [
@@ -16,7 +16,7 @@
   "author": "Jeremy Ettlinger",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Holojerm/sysdesign-prep"
+    "url": "https://github.com/Holojerm/drawthesystem"
   },
   "private": true,
   "type": "module",

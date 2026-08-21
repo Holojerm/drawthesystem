@@ -1,4 +1,4 @@
-# sysdesign-prep
+# Draw the System
 
 System design interview practice for any coding agent that supports [Agent Skills](https://agentskills.io): research a target company, build a company-flavoured scenario, play interviewer (text or voice), critique Excalidraw diagrams, generate reference architectures, track progress.
 

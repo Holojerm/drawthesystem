@@ -1,6 +1,6 @@
 # @drawthesystem/core
 
-The shared brain of sysdesign-prep: the excalidraw spec→document generator and
+The shared brain of drawthesystem: the excalidraw spec→document generator and
 document→summary reader as importable functions, plus the skill and rubric
 markdown exposed as importable content. Zero dependencies, pure ESM, no build
 step; runs under Node ≥ 20, Bun ≥ 1.2, and Cloudflare Workers.

@@ -1,4 +1,4 @@
-// @drawthesystem/core — shared brain of sysdesign-prep and the cloud product.
+// @drawthesystem/core — shared brain of drawthesystem and the cloud product.
 // Content exports live in separate subpaths because they resolve .md files:
 //   @drawthesystem/core/content       (bundler entry: needs an .md-as-text rule)
 //   @drawthesystem/core/content/node  (Node-only: reads the files with fs)

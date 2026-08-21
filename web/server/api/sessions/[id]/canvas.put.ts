@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, statusMessage: "canvas changed on disk", data: { mtime: current } });
   }
   const doc = {
-    type: "excalidraw", version: 2, source: "sysdesign-prep",
+    type: "excalidraw", version: 2, source: "drawthesystem",
     elements: (body.elements ?? []).filter((e: any) => !e?.isDeleted),
     appState: { viewBackgroundColor: (body.appState?.viewBackgroundColor as string) ?? "#ffffff", gridSize: body.appState?.gridSize ?? null },
     files: body.files ?? {},

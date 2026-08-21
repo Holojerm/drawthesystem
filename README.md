@@ -1,4 +1,4 @@
-# sysdesign-prep
+# Draw the System
 
 System design interview practice with any AI coding agent, a real Excalidraw canvas, and your voice — tailored to the company you're interviewing with.
 
@@ -18,7 +18,7 @@ Your agent (Claude Code, Codex CLI, Cursor, Gemini CLI, OpenCode, …) plays res
 Requires [Bun](https://bun.sh) ≥ 1.2.
 
 ```bash
-git clone https://github.com/Holojerm/sysdesign-prep && cd sysdesign-prep
+git clone https://github.com/Holojerm/drawthesystem && cd drawthesystem
 bun install && bun run web        # workbench → http://localhost:7788
 ```
 

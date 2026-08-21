@@ -1,7 +1,7 @@
 {
   "name": "@drawthesystem/core",
   "version": "0.1.0",
-  "description": "Shared core for sysdesign-prep and sysdesign-cloud: excalidraw spec generator/reader plus live-imported skill and rubric content.",
+  "description": "Shared core for drawthesystem and drawthesystem-cloud: excalidraw spec generator/reader plus live-imported skill and rubric content.",
   "license": "MIT",
   "private": true,
   "type": "module",

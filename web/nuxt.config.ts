@@ -15,5 +15,5 @@ export default defineNuxtConfig({
     define: { "process.env.IS_PREACT": JSON.stringify("false") },
     optimizeDeps: { include: ["react", "react-dom", "react-dom/client", "@excalidraw/excalidraw"] },
   },
-  app: { head: { title: "sysdesign-prep", link: [{ rel: "icon", href: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>" }] } },
+  app: { head: { title: "Draw the System", link: [{ rel: "icon", href: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>" }] } },
 });

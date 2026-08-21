@@ -115,7 +115,7 @@ const canvasVisible = computed(() => narrow.value ? pane.value === "canvas" : tr
 const voiceVisible = computed(() => narrow.value ? pane.value === "talk" : showVoice.value);
 const canvasTheme = computed(() => (colorMode.value === "dark" ? "dark" : "light"));
 
-useHead({ title: () => `${session.value?.title ?? "Session"} · sysdesign-prep` });
+useHead({ title: () => `${session.value?.title ?? "Session"} · Draw the System` });
 </script>
 
 <template>

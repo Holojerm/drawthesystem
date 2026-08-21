@@ -74,7 +74,7 @@ function render() {
     onChange,
     viewModeEnabled: !!props.readOnly,
     theme: props.theme ?? "light",
-    name: "sysdesign-prep",
+    name: "drawthesystem",
     UIOptions: { canvasActions: { loadScene: true, saveToActiveFile: false, toggleTheme: false } },
   }, createElement(M, null,
     createElement(M.DefaultItems.LoadScene),
