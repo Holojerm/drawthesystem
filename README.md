@@ -34,7 +34,7 @@ In a second terminal at the repo root, start your agent (`claude`, `codex`, …)
 | `skills/research/references/researcher.md` | Research playbook and profile template |
 | `rubric/rubric.md` | 10 dimensions, 1–5, senior vs. staff bars, diagram checks |
 | `web/` | Nuxt 4 + Nuxt UI workbench: dashboard, companies, session workspace with embedded Excalidraw (autosaves to `canvas.excalidraw`), notes, feedback/solution tabs, timer, voice panel |
-| `core/` | `@sysdesign/core` workspace package — the generator/reader as importable functions (the `scripts/` CLIs are thin shims over it) |
+| `core/` | `@drawthesystem/core` workspace package — the generator/reader as importable functions (the `scripts/` CLIs are thin shims over it) |
 | `scripts/excalidraw.mjs` | JSON graph spec → `.excalidraw` (how the agent draws) |
 | `scripts/read-excalidraw.mjs` | `.excalidraw` → text summary of boxes/arrows/labels (how the agent sees your diagram) |
 | `scripts/session.mjs` | Shared interview clock (`start` / `elapsed` / `pause` / `resume` / `stop`) the workbench timer follows |
