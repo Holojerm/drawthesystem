@@ -1,6 +1,6 @@
-# @sysdesign/core
+# @drawthesystem/core
 
-The shared brain of sysdesign-prep: the excalidraw spec→document generator and
+The shared brain of drawthesystem: the excalidraw spec→document generator and
 document→summary reader as importable functions, plus the skill and rubric
 markdown exposed as importable content. Zero dependencies, pure ESM, no build
 step; runs under Node ≥ 20, Bun ≥ 1.2, and Cloudflare Workers.
@@ -14,9 +14,9 @@ and markdown, so changes here flow downstream automatically.
 
 | Subpath | What | Where it runs |
 | --- | --- | --- |
-| `@sysdesign/core` (also `./excalidraw`, `./read-excalidraw`) | `buildExcalidraw(spec)`, `summarizeExcalidraw(doc, {file?})`, `renderSummaryMarkdown(summary)` | anywhere |
-| `@sysdesign/core/content` | `skills`, `skillsByName`, `rubricMarkdown`, `rubric` — parsed live from `../skills/**` and `../rubric/rubric.md` via static `.md` imports | bundlers only (see below) |
-| `@sysdesign/core/content/node` | `loadContent()` — same result, read with `node:fs` | Node / Bun |
+| `@drawthesystem/core` (also `./excalidraw`, `./read-excalidraw`) | `buildExcalidraw(spec)`, `summarizeExcalidraw(doc, {file?})`, `renderSummaryMarkdown(summary)` | anywhere |
+| `@drawthesystem/core/content` | `skills`, `skillsByName`, `rubricMarkdown`, `rubric` — parsed live from `../skills/**` and `../rubric/rubric.md` via static `.md` imports | bundlers only (see below) |
+| `@drawthesystem/core/content/node` | `loadContent()` — same result, read with `node:fs` | Node / Bun |
 
 ## Consuming `./content` from a bundler
 

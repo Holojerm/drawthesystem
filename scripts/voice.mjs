@@ -113,7 +113,7 @@ else if (cmd === "speak") {
 }
 
 // ------------------------------------------------------------------ page ----
-const PAGE = `<!doctype html><html><head><meta charset="utf-8"><title>sysdesign-prep voice</title>
+const PAGE = `<!doctype html><html><head><meta charset="utf-8"><title>Draw the System voice</title>
 <style>
 body{font:16px/1.5 system-ui;margin:0;padding:24px;max-width:720px;margin:auto;background:#fafafa;color:#222}
 h1{font-size:18px;margin:0 0 8px}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
@@ -124,7 +124,7 @@ button.on{background:#d33;color:#fff;border-color:#d33}
 #log p.me{background:#eef5ff}#log p.ai{background:#f3fff0}
 label{font-size:13px;white-space:nowrap}
 </style></head><body>
-<h1>🎙 sysdesign-prep — voice mode</h1>
+<h1>🎙 Draw the System — voice mode</h1>
 <div id="status">connecting…</div>
 <div class="row">
   <button id="mic">Start listening</button>

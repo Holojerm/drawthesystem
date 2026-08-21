@@ -37,7 +37,7 @@
  * real Excalidraw arrow labels (text bound to the arrow), so the workbench treats
  * them like hand-made ones and read-excalidraw attributes them to the edge.
  *
- * Implementation lives in core/src/excalidraw.mjs (@sysdesign/core) — this is
+ * Implementation lives in core/src/excalidraw.mjs (@drawthesystem/core) — this is
  * a thin CLI over it; the spec doc above is mirrored there, keep both in sync.
  */
 import { readFileSync, writeFileSync } from "node:fs";

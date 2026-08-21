@@ -1,11 +1,11 @@
-# sysdesign-prep
+# Draw the System
 
 System design interview practice for any coding agent that supports [Agent Skills](https://agentskills.io): research a target company, build a company-flavoured scenario, play interviewer (text or voice), critique Excalidraw diagrams, generate reference architectures, track progress.
 
 ## Layout
 - `skills/<name>/SKILL.md` — `/research`, `/scenario`, `/mock`, `/critique`, `/solution`, `/progress`. Each SKILL.md is the source of truth for that flow. `.claude/skills` and `.agents/skills` are symlinks to `skills/` for auto-discovery.
 - `skills/research/references/researcher.md` — the research playbook (`/research` may delegate it to a subagent if the host supports one).
-- `core/` — `@sysdesign/core` workspace package: the excalidraw generator/reader as importable, zero-dep ESM functions, plus the skill/rubric markdown exposed as importable content (`core/content/` imports the source files live — nothing is copied or generated). Consumed live (path dependency) by the cloud product, so edits to `skills/**`, `rubric/rubric.md`, or `core/` flow downstream automatically with no extra step. Adding/renaming a skill is the one change that touches core (an import line in `core/content/index.mjs`).
+- `core/` — `@drawthesystem/core` workspace package: the excalidraw generator/reader as importable, zero-dep ESM functions, plus the skill/rubric markdown exposed as importable content (`core/content/` imports the source files live — nothing is copied or generated). Consumed live (path dependency) by the cloud product, so edits to `skills/**`, `rubric/rubric.md`, or `core/` flow downstream automatically with no extra step. Adding/renaming a skill is the one change that touches core (an import line in `core/content/index.mjs`).
 - `scripts/excalidraw.mjs` — spec JSON → `.excalidraw` (layered auto-layout, coloured by `kind`); schema in the file header. Thin CLI over `core/src/excalidraw.mjs`.
 - `scripts/read-excalidraw.mjs` — `.excalidraw` → markdown summary of boxes/arrows/labels (`--json` for raw). This is how the agent "sees" a diagram. Thin CLI over `core/src/read-excalidraw.mjs`.
 - `scripts/to-clipboard.mjs` — copies a `.excalidraw` to the clipboard so Cmd+V pastes it into excalidraw.com (macOS `pbcopy`).

@@ -19,7 +19,7 @@ bun run web:build
 ## Guidelines
 
 - `skills/`, `scripts/`, and `core/` stay dependency-free and runtime-agnostic (Bun or Node ≥ 20). Only `web/` has dependencies.
-- Generator/reader logic lives in `core/src/` (`@sysdesign/core`); `scripts/excalidraw.mjs` and `scripts/read-excalidraw.mjs` are thin CLI shims that must keep their exact CLI behaviour and import core by relative path (a fresh clone runs them with no install).
+- Generator/reader logic lives in `core/src/` (`@drawthesystem/core`); `scripts/excalidraw.mjs` and `scripts/read-excalidraw.mjs` are thin CLI shims that must keep their exact CLI behaviour and import core by relative path (a fresh clone runs them with no install).
 - `core/content/` imports the `skills/**` and `rubric/rubric.md` source files live — never copy their text anywhere. If you add or rename a skill, add/update its import line in `core/content/index.mjs`; `bun run check` validates the content still parses.
 - Skills are plain markdown in the [Agent Skills](https://agentskills.io) format; keep them model- and agent-agnostic — no vendor-specific tool names.
 - Diagrams are generated from specs via `scripts/excalidraw.mjs`, never hand-written element JSON.

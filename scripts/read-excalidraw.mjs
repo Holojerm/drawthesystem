@@ -11,7 +11,7 @@
  * its label; unbound text is attributed to the shape it overlaps, if any.
  * Connections and container members use the first line of a label as the name.
  *
- * Implementation lives in core/src/read-excalidraw.mjs (@sysdesign/core) —
+ * Implementation lives in core/src/read-excalidraw.mjs (@drawthesystem/core) —
  * this is a thin CLI over it.
  */
 import { readFileSync } from "node:fs";
