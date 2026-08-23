@@ -11,6 +11,7 @@ Your agent (Claude Code, Codex CLI, Cursor, Gemini CLI, OpenCode, …) plays res
 /critique                    # async: grade canvas + notes against the rubric
 /solution                    # reference architecture: full map + realistic 45-min answer + diff vs. yours
 /progress                    # trends per rubric dimension, what to drill next
+/export · /import            # move sessions + progress to/from Draw the System cloud (or another checkout)
 ```
 
 ## Quick start
@@ -30,7 +31,7 @@ In a second terminal at the repo root, start your agent (`claude`, `codex`, …)
 
 | Path | Purpose |
 |---|---|
-| `skills/*/SKILL.md` | The six skills, in the open Agent Skills format |
+| `skills/*/SKILL.md` | The skills, in the open Agent Skills format |
 | `skills/research/references/researcher.md` | Research playbook and profile template |
 | `rubric/rubric.md` | 10 dimensions, 1–5, senior vs. staff bars, diagram checks |
 | `web/` | Nuxt 4 + Nuxt UI workbench: dashboard, companies, session workspace with embedded Excalidraw (autosaves to `canvas.excalidraw`), notes, feedback/solution tabs, timer, voice panel |
@@ -40,6 +41,7 @@ In a second terminal at the repo root, start your agent (`claude`, `codex`, …)
 | `scripts/session.mjs` | Shared interview clock (`start` / `elapsed` / `pause` / `resume` / `stop`) the workbench timer follows |
 | `scripts/voice.mjs` | `speak` / `listen` CLI used by `/mock --voice`; `serve` is a zero-dep fallback page |
 | `scripts/to-clipboard.mjs` | Copy a diagram in Excalidraw's paste format for excalidraw.com |
+| `scripts/bundle.mjs` | `export` / `import` one JSON bundle of `sessions/` + `progress.md` — the same file the cloud app exports and imports, so work moves both ways with a preview and per-session conflict choices |
 
 `sessions/` and `companies/` are git-ignored; `progress.md` is tracked.
 

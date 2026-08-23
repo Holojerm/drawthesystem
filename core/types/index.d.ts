@@ -2,3 +2,4 @@
 // .d.ts files under both "bundler" and "node16" moduleResolution.
 export * from "./excalidraw.js";
 export * from "./read-excalidraw.js";
+export * from "./bundle.js";

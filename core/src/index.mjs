@@ -4,3 +4,4 @@
 //   @drawthesystem/core/content/node  (Node-only: reads the files with fs)
 export { buildExcalidraw } from "./excalidraw.mjs";
 export { summarizeExcalidraw, renderSummaryMarkdown } from "./read-excalidraw.mjs";
+export * from "./bundle.mjs";

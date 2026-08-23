@@ -10,3 +10,5 @@ web/.nuxt/
 web/.output/
 web/.data/
 web/dist/
+# import/export bundles (contain your sessions)
+drawthesystem-export-*.json
