@@ -15,6 +15,8 @@ and markdown, so changes here flow downstream automatically.
 | Subpath | What | Where it runs |
 | --- | --- | --- |
 | `@drawthesystem/core` (also `./excalidraw`, `./read-excalidraw`) | `buildExcalidraw(spec)`, `summarizeExcalidraw(doc, {file?})`, `renderSummaryMarkdown(summary)` | anywhere |
+| `@drawthesystem/core/bundle` (also re-exported from the root) | the import/export bundle format — `normalizeBundle`, `planImport`, `resolveImport`, `sessionFromFiles`/`sessionToFiles`, `parseProgressMd`/`upsertProgressMd`, fingerprints; schema in the file header | anywhere |
+| `@drawthesystem/core/bundle/node` | `readRepoBundle(root)`, `readRepoState(root)`, `applyRepoActions(root, actions)` — the same against a checkout's `sessions/` + `progress.md` | Node / Bun |
 | `@drawthesystem/core/content` | `skills`, `skillsByName`, `rubricMarkdown`, `rubric` — parsed live from `../skills/**` and `../rubric/rubric.md` via static `.md` imports | bundlers only (see below) |
 | `@drawthesystem/core/content/node` | `loadContent()` — same result, read with `node:fs` | Node / Bun |
 
@@ -30,6 +32,10 @@ them as text:
 The markdown files in `skills/` and `rubric/` are the single source of truth —
 never copy their text anywhere. Adding or renaming a skill is the only change
 that touches this package (one import line in `content/index.mjs`).
+
+## Tests
+
+`node --test test/*.test.mjs` (also `bun test test/`) — plain `node:test`, no framework.
 
 The spec format for `buildExcalidraw` is documented at the top of
 `src/excalidraw.mjs` (and mirrored in `scripts/excalidraw.mjs` at the repo

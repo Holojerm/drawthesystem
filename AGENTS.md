@@ -3,11 +3,12 @@
 System design interview practice for any coding agent that supports [Agent Skills](https://agentskills.io): research a target company, build a company-flavoured scenario, play interviewer (text or voice), critique Excalidraw diagrams, generate reference architectures, track progress.
 
 ## Layout
-- `skills/<name>/SKILL.md` — `/research`, `/scenario`, `/mock`, `/critique`, `/solution`, `/progress`. Each SKILL.md is the source of truth for that flow. `.claude/skills` and `.agents/skills` are symlinks to `skills/` for auto-discovery.
+- `skills/<name>/SKILL.md` — `/research`, `/scenario`, `/mock`, `/critique`, `/solution`, `/progress`, `/export`, `/import`. Each SKILL.md is the source of truth for that flow. `.claude/skills` and `.agents/skills` are symlinks to `skills/` for auto-discovery.
 - `skills/research/references/researcher.md` — the research playbook (`/research` may delegate it to a subagent if the host supports one).
 - `core/` — `@drawthesystem/core` workspace package: the excalidraw generator/reader as importable, zero-dep ESM functions, plus the skill/rubric markdown exposed as importable content (`core/content/` imports the source files live — nothing is copied or generated). Consumed live (path dependency) by the cloud product, so edits to `skills/**`, `rubric/rubric.md`, or `core/` flow downstream automatically with no extra step. Adding/renaming a skill is the one change that touches core (an import line in `core/content/index.mjs`).
 - `scripts/excalidraw.mjs` — spec JSON → `.excalidraw` (layered auto-layout, coloured by `kind`); schema in the file header. Thin CLI over `core/src/excalidraw.mjs`.
 - `scripts/read-excalidraw.mjs` — `.excalidraw` → markdown summary of boxes/arrows/labels (`--json` for raw). This is how the agent "sees" a diagram. Thin CLI over `core/src/read-excalidraw.mjs`.
+- `scripts/bundle.mjs` — `export [out.json]` / `import <file> [--dry-run] [--decide …]`: one JSON bundle of `sessions/` + `progress.md`, in the cloud product's account-export format (schema in `core/src/bundle.mjs`), so work moves in both directions. Import always plans first (new / identical / conflict per session) and never deletes. Thin CLI over `core/src/bundle.mjs` (pure) + `core/src/bundle-node.mjs` (fs).
 - `scripts/to-clipboard.mjs` — copies a `.excalidraw` to the clipboard so Cmd+V pastes it into excalidraw.com (macOS `pbcopy`).
 - `scripts/session.mjs` — `start|elapsed|pause|resume|stop <session>` shared interview clock (`<session>/state.json`); the workbench timer follows it (shows ⏸ while paused).
 - `scripts/voice.mjs` — `speak "<text>"` / `listen` / `status` / `log` CLI used by `/mock --voice`; targets the workbench's `/api/voice/*` when it's running, else `serve` runs a zero-dep fallback page.

@@ -1,7 +1,7 @@
 {
   "name": "@drawthesystem/core",
   "version": "0.1.0",
-  "description": "Shared core for drawthesystem and drawthesystem-cloud: excalidraw spec generator/reader plus live-imported skill and rubric content.",
+  "description": "Shared core for drawthesystem and drawthesystem-cloud: excalidraw spec generator/reader, the import/export bundle format, plus live-imported skill and rubric content.",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -29,6 +29,14 @@
     "./content/node": {
       "types": "./types/content-node.d.ts",
       "default": "./content/node.mjs"
+    },
+    "./bundle": {
+      "types": "./types/bundle.d.ts",
+      "default": "./src/bundle.mjs"
+    },
+    "./bundle/node": {
+      "types": "./types/bundle-node.d.ts",
+      "default": "./src/bundle-node.mjs"
     }
   }
 }

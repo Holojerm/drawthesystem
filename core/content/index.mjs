@@ -9,6 +9,8 @@
  * Adding or renaming a skill: update the import list below (and nothing else).
  */
 import critiqueMd from "../../skills/critique/SKILL.md";
+import exportMd from "../../skills/export/SKILL.md";
+import importMd from "../../skills/import/SKILL.md";
 import mockMd from "../../skills/mock/SKILL.md";
 import progressMd from "../../skills/progress/SKILL.md";
 import researchMd from "../../skills/research/SKILL.md";
@@ -22,6 +24,8 @@ import { buildContent } from "./parse.mjs";
 const content = buildContent({
   skillMarkdowns: {
     critique: critiqueMd,
+    export: exportMd,
+    import: importMd,
     mock: mockMd,
     progress: progressMd,
     research: researchMd,
