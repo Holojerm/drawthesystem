@@ -123,6 +123,14 @@ test("planImport classifies new / identical / conflict and resolves decisions", 
   assert.deepEqual(skipped.sessions.map(s => s.kind), ["skip", "skip", "create"]);
   assert.equal(skipped.progress[0].kind, "skip", "progress follows a skipped session");
 
+  const copyWithIdenticalScore = resolveImport(
+    planImport(bundle, { ...existing, progress: [{ sessionName: b.name, fingerprint: plan.progress[0].fingerprint }] }),
+    bundle,
+    { [b.name]: "copy" },
+  );
+  assert.equal(copyWithIdenticalScore.progress[0].kind, "upsert", "a copy gets its score even when the original's is identical");
+  assert.equal(copyWithIdenticalScore.progress[0].sessionName, `${b.name}-3`);
+
   const copied = resolveImport(plan, bundle, { [b.name]: "copy" });
   assert.equal(copied.sessions[1].kind, "create");
   assert.equal(copied.sessions[1].targetName, `${b.name}-3`, "copy name skips taken names");

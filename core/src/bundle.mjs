@@ -437,10 +437,11 @@ export function resolveImport(plan, bundle, decisions = {}, { onConflict = "skip
   for (const item of plan.progress) {
     const row = byProgress.get(item.sessionName);
     if (item.action === "orphan") { progress.push({ kind: "skip", sessionName: item.sessionName, reason: "no such session", row }); continue; }
-    if (item.action === "identical") { progress.push({ kind: "skip", sessionName: item.sessionName, reason: "identical", row }); continue; }
     const dest = target.has(item.sessionName) ? target.get(item.sessionName) : item.sessionName;
     if (dest === null) { progress.push({ kind: "skip", sessionName: item.sessionName, reason: "session skipped", row }); continue; }
-    progress.push({ kind: "upsert", sessionName: dest, reason: item.action, row: { ...row, sessionName: dest } });
+    // A copy is a new session: it gets its score even when the original's is identical.
+    if (dest === item.sessionName && item.action === "identical") { progress.push({ kind: "skip", sessionName: item.sessionName, reason: "identical", row }); continue; }
+    progress.push({ kind: "upsert", sessionName: dest, reason: dest === item.sessionName ? item.action : "copy", row: { ...row, sessionName: dest } });
   }
   return { sessions, progress, summary: summarizeActions({ sessions, progress }) };
 }
