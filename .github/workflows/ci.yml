@@ -10,7 +10,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - uses: oven-sh/setup-bun@v2
-        with: { bun-version: latest }
+        with: { bun-version: 1.4.0 }
       - run: bun install --frozen-lockfile
       - run: bun run check
       # scripts/ and core/ promise to run under plain Node >= 20 with no install

@@ -24,8 +24,9 @@
     "web",
     "core"
   ],
+  "packageManager": "bun@1.4.0",
   "engines": {
-    "bun": ">=1.2"
+    "bun": ">=1.4"
   },
   "scripts": {
     "web": "bun run --cwd web dev",
