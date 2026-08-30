@@ -8,8 +8,8 @@ export default defineNuxtConfig({
   routeRules: { "/sessions/**": { ssr: false } },
   devServer: { port: Number(process.env.VOICE_PORT ?? 7788) },
   runtimeConfig: {
-    // Repo root (parent of web/). Override with SYSDESIGN_ROOT to point at another checkout.
-    repoRoot: process.env.SYSDESIGN_ROOT ?? fileURLToPath(new URL("..", import.meta.url)),
+    // Repo root (parent of web/). Override with DRAWTHESYSTEM_ROOT to point at another checkout.
+    repoRoot: process.env.DRAWTHESYSTEM_ROOT ?? fileURLToPath(new URL("..", import.meta.url)),
   },
   vite: {
     define: { "process.env.IS_PREACT": JSON.stringify("false") },
