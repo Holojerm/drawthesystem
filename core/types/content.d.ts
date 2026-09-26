@@ -28,6 +28,25 @@ export interface Rubric {
   failureModes: string[];
 }
 
+/** A practice problem, parsed from a session's candidate-facing prompt.md. */
+export interface Problem {
+  /** Session directory name with its `YYYY-MM-DD-` date prefix stripped. */
+  slug: string;
+  title: string;
+  /** Display name from the prompt header, e.g. "Kalshi" or "generic". */
+  company: string;
+  mode: "breadth" | "depth";
+  minutes: number;
+  level: string;
+  setting: string;
+  ask: string;
+  constraints: string[];
+  /** "What a strong answer covers" — deliberately not the interviewer's hidden probes. */
+  deliverables: string;
+  /** The full original prompt.md, for feeding a session's promptMd verbatim. */
+  markdown: string;
+}
+
 export interface Content {
   /** Sorted by name. */
   skills: SkillContent[];
@@ -35,9 +54,14 @@ export interface Content {
   /** Raw rubric/rubric.md — the ground truth. */
   rubricMarkdown: string;
   rubric: Rubric;
+  /** Sorted by slug. Never includes interviewer.md — see Problem. */
+  problems: Problem[];
+  problemsBySlug: Record<string, Problem>;
 }
 
 export declare const skills: SkillContent[];
 export declare const skillsByName: Record<string, SkillContent>;
 export declare const rubricMarkdown: string;
 export declare const rubric: Rubric;
+export declare const problems: Problem[];
+export declare const problemsBySlug: Record<string, Problem>;
