@@ -1,0 +1,4 @@
+# Interviewer notes (hidden)
+Crux: a geospatial index (geohash grid or quadtree) sharded by region, updated in-place as drivers move, so "nearby available drivers" is a fast range query rather than a scan; the double-booking race is solved by an atomic claim (compare-and-set on driver status, not "check then assign" as two steps).
+Probes: what happens at a region/grid-cell boundary (a driver just outside the queried cell who's actually closer); how the match/claim step is made atomic across concurrent dispatch attempts for the same driver; how live location fan-out to the rider avoids polling the whole system on every update.
+Red flags: computing distance to every driver in the city on every request (no spatial index); "assign the closest driver" with no atomicity — a classic double-booking bug; treating surge as purely a pricing problem with no mention of matcher load.

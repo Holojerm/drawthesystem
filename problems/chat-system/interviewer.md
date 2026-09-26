@@ -1,0 +1,4 @@
+# Interviewer notes (hidden)
+Crux: persistent per-conversation message log as the source of truth, with a durable per-recipient "last delivered/seen" cursor — a WebSocket/long-lived connection is just a live tap on that log, not the source of truth itself, which is what makes offline delivery and multi-device sync work the same way.
+Probes: how a client that's been offline for a week catches up without replaying everything (cursor + since-id fetch); how a group message fans out to 250 members' connections without one slow connection blocking the rest; message ordering per conversation across multiple sender devices.
+Red flags: treating the WebSocket as the durable store (messages lost if a connection drops mid-send); no cursor/ack model, just "assume delivered once sent"; synchronous fan-out to all group members on the request path.

@@ -1,0 +1,4 @@
+# Interviewer notes (hidden)
+Crux: fan-out-on-write (precompute each follower's feed on post) for normal accounts, fan-out-on-read (merge at query time) for celebrity accounts — a hybrid, not one strategy for everyone; feed storage as a per-user list of post IDs (not full posts) fetched/hydrated at read time.
+Probes: where the fan-out threshold sits and how the system detects "this account needs the other path"; what a cold-start feed load looks like for a brand-new user with no precomputed feed; how ranking (if pursued) changes the storage shape from a simple list to something re-sortable.
+Red flags: fan-out-on-write for every account with no celebrity exception (the classic failure mode); storing full post content duplicated into every follower's feed; treating ranking as "just add a sort" with no data-model consequence.

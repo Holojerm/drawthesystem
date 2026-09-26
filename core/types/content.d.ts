@@ -28,6 +28,28 @@ export interface Rubric {
   failureModes: string[];
 }
 
+/**
+ * A generic practice problem, parsed from problems/<slug>/prompt.md — a
+ * deliberately public, version-controlled directory. Every entry is
+ * company-less by construction (buildContent() rejects anything else), so
+ * there is no `company` field to carry.
+ */
+export interface Problem {
+  /** The problems/<slug> directory name. */
+  slug: string;
+  title: string;
+  mode: "breadth" | "depth";
+  minutes: number;
+  level: string;
+  setting: string;
+  ask: string;
+  constraints: string[];
+  /** "What a strong answer covers" — deliberately not the interviewer's hidden probes. */
+  deliverables: string;
+  /** The full original prompt.md, for feeding a live session's promptMd verbatim. */
+  markdown: string;
+}
+
 export interface Content {
   /** Sorted by name. */
   skills: SkillContent[];
@@ -35,9 +57,14 @@ export interface Content {
   /** Raw rubric/rubric.md — the ground truth. */
   rubricMarkdown: string;
   rubric: Rubric;
+  /** Sorted by slug. Never includes interviewer.md content — see Problem. */
+  problems: Problem[];
+  problemsBySlug: Record<string, Problem>;
 }
 
 export declare const skills: SkillContent[];
 export declare const skillsByName: Record<string, SkillContent>;
 export declare const rubricMarkdown: string;
 export declare const rubric: Rubric;
+export declare const problems: Problem[];
+export declare const problemsBySlug: Record<string, Problem>;

@@ -1,0 +1,4 @@
+# Interviewer notes (hidden)
+Crux: consistent hashing (with virtual nodes) for partitioning so adding/removing a node moves ~1/N of keys, not everything; quorum-based replication (N/W/R) is what makes "tunable consistency" a real, adjustable knob rather than a slogan — W+R>N for strong reads on demand, lower for eventual.
+Probes: how virtual nodes smooth out load when the cluster is small or unevenly sized; what a failed node actually looks like operationally (hinted handoff, read repair, or just "wait for replacement") and how long data is at reduced durability during that window; what a caller changes to get a strongly consistent read on one key and an eventually consistent one on another.
+Red flags: modulo hashing (`hash(key) % N`) presented as the partitioning scheme (reshuffles everything on resize); "replication" with no quorum/consistency model attached to it; treating node failure as someone else's problem ("the ops team handles that").

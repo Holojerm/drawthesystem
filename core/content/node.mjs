@@ -1,10 +1,18 @@
 /**
- * node.mjs — Node/Bun loader for the skill/rubric content.
+ * node.mjs — Node/Bun loader for the skill/rubric/problem content.
  *
  * Reads the same source files as ./index.mjs but with fs (Workers can't), so
  * repo tooling and CI can validate the content without a bundler. Scans
- * skills/ dynamically — a new skill is picked up here with no changes (the
- * bundler entry ./index.mjs still needs its one import line).
+ * skills/ and problems/ dynamically — a new skill or problem is picked up
+ * here with no changes (the bundler entry ./index.mjs still needs its one
+ * import line each).
+ *
+ * problems/, never sessions/ or companies/: those two are gitignored,
+ * fork-local personal practice data (someone's own interview targets and
+ * history — see .gitignore and the cloud repo's
+ * server/db/seed/company-profiles.sql, which says the same about companies/).
+ * problems/ is a separate, deliberately public and version-controlled
+ * directory of generic practice problems, safe to publish as product content.
  */
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -30,9 +38,20 @@ export function loadContent(rootDir = fileURLToPath(new URL("../..", import.meta
       );
     }
   }
+
+  const problemMarkdowns = {};
+  const problemsDir = join(rootDir, "problems");
+  for (const entry of readdirSync(problemsDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const promptPath = join(problemsDir, entry.name, "prompt.md");
+    if (!existsSync(promptPath)) continue;
+    problemMarkdowns[entry.name] = readFileSync(promptPath, "utf8");
+  }
+
   return buildContent({
     skillMarkdowns,
     references,
     rubricMarkdown: readFileSync(join(rootDir, "rubric", "rubric.md"), "utf8"),
+    problemMarkdowns,
   });
 }

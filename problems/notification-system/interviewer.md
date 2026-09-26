@@ -1,0 +1,4 @@
+# Interviewer notes (hidden)
+Crux: idempotency key supplied by the caller (not generated server-side) so a retried request never double-sends; priority queues/paths per urgency class rather than one FIFO queue, so an OTP isn't stuck behind a marketing blast; per-channel adapters isolated so one vendor's outage can't back-pressure the others.
+Probes: what the idempotency key is scoped to (per-notification, per-user-per-event?) and how long dedup state is retained; how quiet-hours/preference lookup doesn't become a synchronous bottleneck on the hot path; what "queue and retry" looks like concretely for a down vendor without unbounded queue growth.
+Red flags: one shared queue for OTPs and marketing digests; dedup based on "hope the caller doesn't retry"; no distinction between a transient vendor failure and a permanent one (dead-letter never mentioned).
