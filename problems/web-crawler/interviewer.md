@@ -1,0 +1,4 @@
+# Interviewer notes (hidden)
+Crux: the URL frontier is partitioned by host (not globally FIFO) so per-host politeness and per-host rate limiting are structural, not bolted on; a per-host queue depth cap is what actually bounds a crawler trap's blast radius.
+Probes: how the frontier decides "which host gets the next fetch slot" fairly across hosts of wildly different sizes; how re-crawl priority is computed from observed change frequency rather than a fixed schedule; what specifically detects a crawler trap (URL growth rate per host, content-hash cycles) versus a legitimately huge site.
+Red flags: a single global queue with no per-host structure (politeness becomes best-effort); "just set a max crawl depth" as the entire crawler-trap defense; no deduplication story beyond exact URL match (misses tracking-parameter variants).

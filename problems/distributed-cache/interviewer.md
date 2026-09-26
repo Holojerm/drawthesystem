@@ -1,0 +1,4 @@
+# Interviewer notes (hidden)
+Crux: cache-aside (read-through on miss, explicit invalidate-or-update on write) is the default answer here, not write-through — the interesting part is the thundering-herd defense (request coalescing / single-flight per key, or a short "locked, please wait" state) and short TTL as a consistency backstop under invalidation.
+Probes: what happens when 10,000 requests miss the same freshly-evicted popular key simultaneously; how invalidation reaches every node in the cluster (pub/sub, versioned keys, or TTL-only); consistent hashing for key placement and what happens to hit rate during a rebalance.
+Red flags: write-through presented as obviously correct with no discussion of write amplification; no thundering-herd mitigation at all ("the DB can handle a few thousand extra reads"); TTL as the only invalidation mechanism with no bound on staleness under the constraint given.

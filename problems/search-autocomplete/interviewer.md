@@ -1,0 +1,4 @@
+# Interviewer notes (hidden)
+Crux: a trie (or compressed trie) with each node caching its own top-K completions is what makes lookups O(prefix length) instead of a scan; freshness comes from a separate offline/streaming aggregation job that periodically rebuilds or patches the trie's cached top-K, decoupled from the read path entirely.
+Probes: how top-K-per-node is kept updated without recomputing the whole trie on every count change; how a trending term breaks into the top-K within minutes (streaming aggregation window) versus a batch job that runs hourly; what the client/server does when the ranking service is slow or down (serve stale index, or nothing, but never block typing).
+Red flags: scanning all queries matching a prefix at request time (no precomputed structure); no separate story for "fresh trending term" vs. "steady-state popular term" — treating it as the same problem; graceful degradation not mentioned until asked.

@@ -1,0 +1,4 @@
+# Interviewer notes (hidden)
+Crux: shared counters need a fast, low-latency store nodes can hit on every request (Redis/similar with atomic incr+expire, or a sliding-window log/counter) — not a per-node in-memory count, which under-enforces as node count grows; the fail-open decision is a deliberate trade-off to state out loud, not a bug to be talked out of.
+Probes: token bucket vs. sliding-window counter vs. sliding-window log trade-offs (burst tolerance vs. memory vs. accuracy); how a quota change propagates to every gateway node within seconds; what happens to the limiter's own store under the same load spike it's meant to protect against.
+Red flags: an in-memory per-node counter presented as sufficient at this scale; no distinction between "reject the request" and "the limiter itself failed"; ignoring clock skew in a sliding-window design.

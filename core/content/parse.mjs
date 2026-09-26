@@ -78,8 +78,75 @@ function bulletsUnder(lines, heading) {
   return out;
 }
 
+/**
+ * Parse a problems/<slug>/prompt.md (the same candidate-facing template
+ * skills/scenario/SKILL.md generates for a live session) into structured
+ * problem content for public consumption.
+ *
+ * Only ever called on problems/ — a deliberately public, version-controlled
+ * directory of generic (company-less) practice problems. Never on sessions/
+ * or companies/: those are gitignored, fork-local personal practice data
+ * (someone's own interview targets and history) and must never be imported
+ * here. This function also never reads a problem's interviewer.md; that file
+ * is the hidden answer key and is parsed by nothing in this module.
+ */
+export function parseProblemMarkdown(markdown, { slug, source = "prompt.md" } = {}) {
+  const lines = markdown.split("\n");
+  const title = markdown.match(/^#\s+(.+)$/m)?.[1]?.trim();
+  if (!title) throw new Error(`${source}: missing "# Title" heading`);
+
+  const headerIndex = lines.findIndex(l => /^_.*Company:.*_\s*$/.test(l.trim()));
+  if (headerIndex === -1) throw new Error(`${source}: missing "_Company: … · Mode: …_" header line`);
+  const header = lines[headerIndex].trim().replace(/^_/, "").replace(/_$/, "");
+  const fields = {};
+  for (const part of header.split("·")) {
+    const kv = /^\s*([A-Za-z]+):\s*(.+?)\s*$/.exec(part);
+    if (!kv) throw new Error(`${source}: unparseable header field: "${part}"`);
+    fields[kv[1].toLowerCase()] = kv[2];
+  }
+  if (!fields.company) throw new Error(`${source}: header missing "Company:"`);
+  if (fields.company.toLowerCase() !== "generic") {
+    throw new Error(`${source}: problems/ entries must be Company: generic, found "${fields.company}"`);
+  }
+
+  const sections = {};
+  let current = null;
+  for (const line of lines.slice(headerIndex + 1)) {
+    const h = /^##\s+(.+)$/.exec(line);
+    if (h) {
+      current = h[1].trim();
+      sections[current] = [];
+      continue;
+    }
+    if (current) sections[current].push(line);
+  }
+  const sectionBody = name => (sections[name] ?? []).join("\n").trim();
+  const bullets = text => text.split("\n").map(l => l.trim()).filter(l => l.startsWith("- ")).map(l => l.slice(2).trim());
+
+  const settingKey = "Setting";
+  const askKey = "The ask";
+  const constraintsKey = "Given constraints";
+  const deliverablesKey = Object.keys(sections).find(k => k.startsWith("Deliverables"));
+  for (const [label, key] of [["Setting", settingKey], ["The ask", askKey], ["Given constraints", constraintsKey], ["Deliverables", deliverablesKey]]) {
+    if (!key || !(key in sections)) throw new Error(`${source}: missing "## ${label}" section`);
+  }
+
+  return {
+    slug,
+    title,
+    mode: /depth/i.test(fields.mode ?? "") ? "depth" : "breadth",
+    minutes: Number(fields.time?.match(/\d+/)?.[0]) || 45,
+    level: fields.level ?? "senior/staff",
+    setting: sectionBody(settingKey),
+    ask: sectionBody(askKey),
+    constraints: bullets(sectionBody(constraintsKey)),
+    deliverables: sectionBody(deliverablesKey),
+    markdown,
+  };
+}
+
 /** Assemble the public content shape from raw markdown strings. */
-export function buildContent({ skillMarkdowns, references = {}, rubricMarkdown }) {
+export function buildContent({ skillMarkdowns, references = {}, rubricMarkdown, problemMarkdowns = {} }) {
   const skills = Object.entries(skillMarkdowns)
     .map(([name, md]) => {
       const skill = parseSkillMarkdown(md, { source: `skills/${name}/SKILL.md` });
@@ -88,10 +155,15 @@ export function buildContent({ skillMarkdowns, references = {}, rubricMarkdown }
       return skill;
     })
     .sort((a, b) => a.name.localeCompare(b.name));
+  const problems = Object.entries(problemMarkdowns)
+    .map(([slug, md]) => parseProblemMarkdown(md, { slug, source: `problems/${slug}/prompt.md` }))
+    .sort((a, b) => a.slug.localeCompare(b.slug));
   return {
     skills,
     skillsByName: Object.fromEntries(skills.map(s => [s.name, s])),
     rubricMarkdown,
     rubric: parseRubricMarkdown(rubricMarkdown),
+    problems,
+    problemsBySlug: Object.fromEntries(problems.map(p => [p.slug, p])),
   };
 }
