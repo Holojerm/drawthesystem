@@ -35,7 +35,8 @@
     "typecheck": "bun run --cwd web typecheck",
     "voice": "bun scripts/voice.mjs serve",
     "demo": "bun scripts/demo.mjs",
-    "test": "node --test core/test/*.test.mjs",
-    "check": "node --test core/test/*.test.mjs && bun scripts/excalidraw.mjs examples/sample-spec.json /tmp/sdp-check.excalidraw && bun scripts/read-excalidraw.mjs /tmp/sdp-check.excalidraw > /dev/null && node --input-type=module -e \"const c = (await import('./core/content/node.mjs')).loadContent(); if (c.skills.length < 8) throw new Error('missing skills'); if (c.problems.length < 15) throw new Error('missing problems'); console.log('content ok (' + c.skills.length + ' skills, ' + c.rubric.dimensions.length + ' rubric dimensions, ' + c.problems.length + ' problems)')\" && echo scripts ok"
+    "test": "node --test core/test/*.test.mjs && bun test web/test",
+    "types:core": "bun run --cwd web tsc -p ../core/test/types/tsconfig.json",
+    "check": "bun run test && bun run types:core && bun scripts/excalidraw.mjs examples/sample-spec.json /tmp/sdp-check.excalidraw && bun scripts/read-excalidraw.mjs /tmp/sdp-check.excalidraw > /dev/null && node --input-type=module -e \"const c = (await import('./core/content/node.mjs')).loadContent(); if (c.skills.length < 8) throw new Error('missing skills'); if (c.problems.length < 15) throw new Error('missing problems'); console.log('content ok (' + c.skills.length + ' skills, ' + c.rubric.dimensions.length + ' rubric dimensions, ' + c.problems.length + ' problems)')\" && echo scripts ok"
   }
 }
