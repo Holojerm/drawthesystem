@@ -1,14 +1,17 @@
 import { promises as fs } from "node:fs";
-import { join, resolve, sep } from "node:path";
+import { join, resolve } from "node:path";
+import { PathOutsideRootError, resolveInside } from "./safe-path";
 
 export const root = () => resolve(useRuntimeConfig().repoRoot as string);
 
 /** Resolve a path inside the repo, refusing traversal outside it. */
 export function safePath(...parts: string[]) {
-  const r = root();
-  const p = resolve(r, ...parts);
-  if (p !== r && !p.startsWith(r + sep)) throw createError({ statusCode: 400, statusMessage: "path outside repo" });
-  return p;
+  try {
+    return resolveInside(root(), ...parts);
+  } catch (e) {
+    if (e instanceof PathOutsideRootError) throw createError({ statusCode: 400, statusMessage: "path outside repo" });
+    throw e;
+  }
 }
 
 export async function readText(...parts: string[]) {
