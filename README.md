@@ -8,7 +8,7 @@ Your agent (Claude Code, Codex CLI, Cursor, Gemini CLI, OpenCode, …) plays res
 
 This repo is the whole tool. Run it on your machine for free, forever, under the MIT license.
 
-If you would rather not run it, there is a hosted version at [drawthesystem.com](https://drawthesystem.com). It gives you a hosted workspace (canvas, brief, timer, voice). Your own Claude connects to it over MCP and plays interviewer and grader, using the same skills and rubric as this repo. A 30-day pass is $20 and does not auto-renew unless you turn that on. Sessions and progress move between the two with `/export` and `/import`.
+If you would rather not run it, there is a hosted version at [drawthesystem.com](https://drawthesystem.com). It gives you a hosted workspace (canvas, brief, timer, voice). Your own Claude connects to it over MCP and plays interviewer and grader, using the same skills and rubric as this repo. Every new account gets one free graded session; after that, a 30-day pass is $20 and does not auto-renew unless you turn that on. Sessions and progress move between the two with `/export` and `/import`.
 
 ```
 /research stripe <job-url>   # eng blog, talks, scale, reported prompts → companies/stripe/profile.md
@@ -40,6 +40,7 @@ In a second terminal at the repo root, start your agent (`claude`, `codex`, …)
 | `skills/*/SKILL.md` | The skills, in the open Agent Skills format |
 | `skills/research/references/researcher.md` | Research playbook and profile template |
 | `rubric/rubric.md` | 10 dimensions, 1–5, senior vs. staff bars, diagram checks |
+| `problems/<slug>/` | 15 generic practice problems: `prompt.md` (what the candidate sees), `study.md` (key trade-offs and common mistakes for that problem, for study and review, not for use mid-interview), `interviewer.md` (hidden answer key) and `notes.md` |
 | `web/` | Nuxt 4 + Nuxt UI workbench: dashboard, companies, session workspace with embedded Excalidraw (autosaves to `canvas.excalidraw`), notes, feedback/solution tabs, timer, voice panel |
 | `core/` | `@drawthesystem/core` workspace package — the generator/reader as importable functions (the `scripts/` CLIs are thin shims over it) |
 | `scripts/excalidraw.mjs` | JSON graph spec → `.excalidraw` (how the agent draws) |
