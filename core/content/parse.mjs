@@ -145,8 +145,41 @@ export function parseProblemMarkdown(markdown, { slug, source = "prompt.md" } = 
   };
 }
 
+/**
+ * Parse a problems/<slug>/study.md: candidate-facing study notes with exactly
+ * two sections, "## Key trade-offs" and "## Common mistakes", each 3 to 5
+ * bullets shaped `- **Title.** Body text.` Throws on anything else, so a
+ * malformed note breaks CI here rather than a downstream page. Never reads
+ * interviewer.md.
+ */
+export function parseStudyMarkdown(markdown, { source = "study.md" } = {}) {
+  const sections = {};
+  let current = null;
+  for (const line of markdown.split("\n")) {
+    const h = /^##\s+(.+)$/.exec(line);
+    if (h) {
+      current = h[1].trim();
+      sections[current] = [];
+    } else if (current) sections[current].push(line);
+  }
+  const entries = name => {
+    const lines = sections[name];
+    if (!lines) throw new Error(`${source}: missing "## ${name}" section`);
+    const out = lines
+      .filter(l => l.trim())
+      .map(l => {
+        const m = /^- \*\*(.+?)\.?\*\*\s+(\S[\s\S]*)$/.exec(l.trim());
+        if (!m) throw new Error(`${source}: "## ${name}" line is not "- **Title.** text": ${l}`);
+        return { title: m[1].trim(), text: m[2].trim() };
+      });
+    if (out.length < 3 || out.length > 5) throw new Error(`${source}: "## ${name}" needs 3 to 5 entries, found ${out.length}`);
+    return out;
+  };
+  return { tradeoffs: entries("Key trade-offs"), mistakes: entries("Common mistakes") };
+}
+
 /** Assemble the public content shape from raw markdown strings. */
-export function buildContent({ skillMarkdowns, references = {}, rubricMarkdown, problemMarkdowns = {} }) {
+export function buildContent({ skillMarkdowns, references = {}, rubricMarkdown, problemMarkdowns = {}, studyMarkdowns = {} }) {
   const skills = Object.entries(skillMarkdowns)
     .map(([name, md]) => {
       const skill = parseSkillMarkdown(md, { source: `skills/${name}/SKILL.md` });
@@ -156,7 +189,12 @@ export function buildContent({ skillMarkdowns, references = {}, rubricMarkdown, 
     })
     .sort((a, b) => a.name.localeCompare(b.name));
   const problems = Object.entries(problemMarkdowns)
-    .map(([slug, md]) => parseProblemMarkdown(md, { slug, source: `problems/${slug}/prompt.md` }))
+    .map(([slug, md]) => {
+      const problem = parseProblemMarkdown(md, { slug, source: `problems/${slug}/prompt.md` });
+      const study = studyMarkdowns[slug];
+      problem.study = study ? parseStudyMarkdown(study, { source: `problems/${slug}/study.md` }) : null;
+      return problem;
+    })
     .sort((a, b) => a.slug.localeCompare(b.slug));
   return {
     skills,

@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { buildContent, parseProblemMarkdown } from "../content/parse.mjs";
+import { buildContent, parseProblemMarkdown, parseStudyMarkdown } from "../content/parse.mjs";
 import { loadContent } from "../content/node.mjs";
 
 const PROMPT = `# Design a URL shortener
@@ -80,5 +80,59 @@ test("loadContent scans problems/ off disk and finds the real, generic-only cata
   // non-generic Company field), so nothing here can be company-flavoured.
   for (const problem of content.problems) {
     assert.ok(!("company" in problem));
+  }
+});
+
+const STUDY = `# Study notes: x
+
+## Key trade-offs
+- **Counter or hash.** One tension. Two sentences.
+- **Cache or fresh.** Another.
+- **Sync or async.** A third.
+
+## Common mistakes
+- **Skipping the unique index.** Races.
+- **Ignoring expiry.** Stale.
+- **No kill path.** Abuse.
+`;
+
+test("parseStudyMarkdown reads both lists into title and text", () => {
+  const study = parseStudyMarkdown(STUDY);
+  assert.deepEqual(study.tradeoffs[0], { title: "Counter or hash", text: "One tension. Two sentences." });
+  assert.equal(study.tradeoffs.length, 3);
+  assert.equal(study.mistakes[2].title, "No kill path");
+});
+
+test("parseStudyMarkdown rejects a missing section, a bad line and a wrong count", () => {
+  assert.throws(() => parseStudyMarkdown("## Key trade-offs\n"), /needs 3 to 5|missing/);
+  assert.throws(() => parseStudyMarkdown(STUDY.replace("## Common mistakes", "## Other")), /missing "## Common mistakes"/);
+  assert.throws(() => parseStudyMarkdown(STUDY.replace("- **Ignoring expiry.** Stale.", "- plain bullet")), /not "- \*\*Title/);
+  assert.throws(() => parseStudyMarkdown(STUDY.replace(/- \*\*No kill path.*\n/, "")), /needs 3 to 5 entries, found 2/);
+});
+
+test("buildContent attaches study notes by slug and leaves null without them", () => {
+  const content = buildContent({
+    skillMarkdowns: {},
+    rubricMarkdown: loadContent().rubricMarkdown,
+    problemMarkdowns: { alpha: PROMPT, beta: PROMPT },
+    studyMarkdowns: { alpha: STUDY },
+  });
+  assert.equal(content.problemsBySlug.alpha.study.tradeoffs.length, 3);
+  assert.equal(content.problemsBySlug.beta.study, null);
+});
+
+test("every real problem has 3 to 5 trade-offs and mistakes, free of hidden-key language", () => {
+  const content = loadContent();
+  assert.equal(content.problems.length, 15);
+  for (const p of content.problems) {
+    assert.ok(p.study, `${p.slug} has no study.md`);
+    for (const list of [p.study.tradeoffs, p.study.mistakes]) {
+      assert.ok(list.length >= 3 && list.length <= 5, `${p.slug}: ${list.length} entries`);
+      for (const e of list) {
+        assert.ok(e.title.length > 3 && e.text.length > 40, `${p.slug}: thin entry "${e.title}"`);
+        assert.ok(!/[\u2014\u2013]/.test(`${e.title}${e.text}`), `${p.slug}: dash in "${e.title}"`);
+      }
+    }
+    assert.ok(!("interviewerMd" in p));
   }
 });
