@@ -4,6 +4,12 @@ System design interview practice with any AI coding agent, a real Excalidraw can
 
 Your agent (Claude Code, Codex CLI, Cursor, Gemini CLI, OpenCode, …) plays researcher, interviewer, and grader via portable [Agent Skills](https://agentskills.io). A local Nuxt workbench provides the whiteboard, brief, timer, and voice panel. Everything is files in this repo: no accounts, no hosted service, any model.
 
+## Free locally, or hosted
+
+This repo is the whole tool. Run it on your machine for free, forever, under the MIT license.
+
+If you would rather not run it, there is a hosted version at [drawthesystem.com](https://drawthesystem.com). It gives you a hosted workspace (canvas, brief, timer, voice). Your own Claude connects to it over MCP and plays interviewer and grader, using the same skills and rubric as this repo. A 30-day pass is $20 and does not auto-renew unless you turn that on. Sessions and progress move between the two with `/export` and `/import`.
+
 ```
 /research stripe <job-url>   # eng blog, talks, scale, reported prompts → companies/stripe/profile.md
 /scenario stripe 3           # company-flavoured prompt + hidden interviewer notes + canvas → sessions/…
