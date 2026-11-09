@@ -41,6 +41,21 @@ import searchAutocompleteMd from "../../problems/search-autocomplete/prompt.md";
 import urlShortenerMd from "../../problems/url-shortener/prompt.md";
 import videoStreamingMd from "../../problems/video-streaming/prompt.md";
 import webCrawlerMd from "../../problems/web-crawler/prompt.md";
+import chatSystemStudyMd from "../../problems/chat-system/study.md";
+import collaborativeEditorStudyMd from "../../problems/collaborative-editor/study.md";
+import distributedCacheStudyMd from "../../problems/distributed-cache/study.md";
+import fileSyncStudyMd from "../../problems/file-sync/study.md";
+import keyValueStoreStudyMd from "../../problems/key-value-store/study.md";
+import metricsMonitoringStudyMd from "../../problems/metrics-monitoring/study.md";
+import newsFeedStudyMd from "../../problems/news-feed/study.md";
+import notificationSystemStudyMd from "../../problems/notification-system/study.md";
+import paymentLedgerStudyMd from "../../problems/payment-ledger/study.md";
+import rateLimiterStudyMd from "../../problems/rate-limiter/study.md";
+import rideHailingDispatchStudyMd from "../../problems/ride-hailing-dispatch/study.md";
+import searchAutocompleteStudyMd from "../../problems/search-autocomplete/study.md";
+import urlShortenerStudyMd from "../../problems/url-shortener/study.md";
+import videoStreamingStudyMd from "../../problems/video-streaming/study.md";
+import webCrawlerStudyMd from "../../problems/web-crawler/study.md";
 
 import { buildContent } from "./parse.mjs";
 
@@ -75,6 +90,23 @@ const content = buildContent({
     "url-shortener": urlShortenerMd,
     "video-streaming": videoStreamingMd,
     "web-crawler": webCrawlerMd,
+  },
+  studyMarkdowns: {
+    "chat-system": chatSystemStudyMd,
+    "collaborative-editor": collaborativeEditorStudyMd,
+    "distributed-cache": distributedCacheStudyMd,
+    "file-sync": fileSyncStudyMd,
+    "key-value-store": keyValueStoreStudyMd,
+    "metrics-monitoring": metricsMonitoringStudyMd,
+    "news-feed": newsFeedStudyMd,
+    "notification-system": notificationSystemStudyMd,
+    "payment-ledger": paymentLedgerStudyMd,
+    "rate-limiter": rateLimiterStudyMd,
+    "ride-hailing-dispatch": rideHailingDispatchStudyMd,
+    "search-autocomplete": searchAutocompleteStudyMd,
+    "url-shortener": urlShortenerStudyMd,
+    "video-streaming": videoStreamingStudyMd,
+    "web-crawler": webCrawlerStudyMd,
   },
 });
 

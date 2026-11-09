@@ -17,7 +17,7 @@ and markdown, so changes here flow downstream automatically.
 | `@drawthesystem/core` (also `./excalidraw`, `./read-excalidraw`) | `buildExcalidraw(spec)`, `summarizeExcalidraw(doc, {file?})`, `renderSummaryMarkdown(summary)` | anywhere |
 | `@drawthesystem/core/bundle` (also re-exported from the root) | the import/export bundle format — `normalizeBundle`, `planImport`, `resolveImport`, `sessionFromFiles`/`sessionToFiles`, `parseProgressMd`/`upsertProgressMd`, fingerprints; schema in the file header | anywhere |
 | `@drawthesystem/core/bundle/node` | `readRepoBundle(root)`, `readRepoState(root)`, `applyRepoActions(root, actions)` — the same against a checkout's `sessions/` + `progress.md` | Node / Bun |
-| `@drawthesystem/core/content` | `skills`, `skillsByName`, `rubricMarkdown`, `rubric`, `problems`, `problemsBySlug` — parsed live from `../skills/**`, `../rubric/rubric.md`, and every `../problems/*/prompt.md` via static `.md` imports. **Not** `sessions/` or `companies/` — those are gitignored, fork-local personal practice data and must never be imported here. | bundlers only (see below) |
+| `@drawthesystem/core/content` | `skills`, `skillsByName`, `rubricMarkdown`, `rubric`, `problems`, `problemsBySlug` — parsed live from `../skills/**`, `../rubric/rubric.md`, and every `../problems/*/prompt.md` and `../problems/*/study.md` via static `.md` imports. Each problem carries `study: { tradeoffs, mistakes }` (3 to 5 `{ title, text }` entries each, from `study.md`; candidate-facing, so never shown mid-mock). **Not** `sessions/` or `companies/` — those are gitignored, fork-local personal practice data and must never be imported here. | bundlers only (see below) |
 | `@drawthesystem/core/content/node` | `loadContent()` — same result, read with `node:fs` | Node / Bun |
 
 ## Consuming `./content` from a bundler
@@ -29,10 +29,10 @@ them as text:
 - **Vite/Nuxt**: a tiny plugin (or `?raw` imports): transform `*.md` to `export default <text>`
 - **esbuild**: `--loader:.md=text`
 
-The markdown files in `skills/`, `rubric/`, and `problems/*/prompt.md` are the
+The markdown files in `skills/`, `rubric/`, and `problems/*/prompt.md`, and `problems/*/study.md` are the
 single source of truth — never copy their text anywhere. Adding or renaming a
-skill, or adding a problem, is the only change that touches this package (one
-import line in `content/index.mjs`). `problems` reads from `problems/`, a
+skill, or adding a problem, is the only change that touches this package (import
+lines in `content/index.mjs`, one per `prompt.md` and `study.md`). `problems` reads from `problems/`, a
 deliberately public, version-controlled directory of generic practice
 problems — never from `sessions/` or `companies/`, which are gitignored,
 fork-local personal practice data (someone's own interview targets) and must

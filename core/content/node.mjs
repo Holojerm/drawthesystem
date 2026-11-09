@@ -40,12 +40,15 @@ export function loadContent(rootDir = fileURLToPath(new URL("../..", import.meta
   }
 
   const problemMarkdowns = {};
+  const studyMarkdowns = {};
   const problemsDir = join(rootDir, "problems");
   for (const entry of readdirSync(problemsDir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     const promptPath = join(problemsDir, entry.name, "prompt.md");
     if (!existsSync(promptPath)) continue;
     problemMarkdowns[entry.name] = readFileSync(promptPath, "utf8");
+    const studyPath = join(problemsDir, entry.name, "study.md");
+    if (existsSync(studyPath)) studyMarkdowns[entry.name] = readFileSync(studyPath, "utf8");
   }
 
   return buildContent({
@@ -53,5 +56,6 @@ export function loadContent(rootDir = fileURLToPath(new URL("../..", import.meta
     references,
     rubricMarkdown: readFileSync(join(rootDir, "rubric", "rubric.md"), "utf8"),
     problemMarkdowns,
+    studyMarkdowns,
   });
 }

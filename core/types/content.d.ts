@@ -28,6 +28,24 @@ export interface Rubric {
   failureModes: string[];
 }
 
+/** One study-note entry: a bolded title (trailing period dropped) and its explanation. */
+export interface StudyEntry {
+  title: string;
+  text: string;
+}
+
+/**
+ * Candidate-facing study notes from problems/<slug>/study.md: 3 to 5 entries
+ * in each list. Never interviewer material, and a live mock must not show
+ * them to the candidate mid-interview.
+ */
+export interface ProblemStudy {
+  /** Decisions a strong answer weighs: the tension and what pushes it either way. */
+  tradeoffs: StudyEntry[];
+  /** Mistakes specific to this problem and why each one hurts. */
+  mistakes: StudyEntry[];
+}
+
 /**
  * A generic practice problem, parsed from problems/<slug>/prompt.md — a
  * deliberately public, version-controlled directory. Every entry is
@@ -46,6 +64,8 @@ export interface Problem {
   constraints: string[];
   /** "What a strong answer covers" — deliberately not the interviewer's hidden probes. */
   deliverables: string;
+  /** Per-problem study notes; null only for a problem that has no study.md. */
+  study: ProblemStudy | null;
   /** The full original prompt.md, for feeding a live session's promptMd verbatim. */
   markdown: string;
 }

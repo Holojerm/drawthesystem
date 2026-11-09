@@ -40,5 +40,6 @@ const names: string[] = bundleNode.listSessionNames("/tmp");
 const all = contentNode.loadContent();
 const firstSkill: string | undefined = all.skills[0]?.name;
 const bySlug = content.problemsBySlug["x"];
+const firstTradeoff: string | undefined = bySlug?.study?.tradeoffs[0]?.title;
 
-export const used = [md, sameFn, sameReader, notNumber, text, counts, hash, parsed, fmt, nodeBundle, names, firstSkill, bySlug];
+export const used = [md, sameFn, sameReader, notNumber, text, counts, hash, parsed, fmt, nodeBundle, names, firstSkill, bySlug, firstTradeoff];
